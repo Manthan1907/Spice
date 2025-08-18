@@ -151,13 +151,14 @@ export default function Home() {
         
         {!isLoading && viewMode === 'main' && (
           <>
-            <ToneSelector 
-              selectedTone={selectedTone}
-              onToneSelect={setSelectedTone}
-            />
-
             <UploadSection 
-              onImageUpload={(base64Image: string) => analyzeImageMutation.mutate(base64Image)}
+              onImagesUpload={(images, tone) => {
+                // Process the first image for now, can be extended for multiple images
+                if (images.length > 0) {
+                  setSelectedTone(tone);
+                  analyzeImageMutation.mutate(images[0].base64);
+                }
+              }}
               isLoading={isLoading}
             />
 
