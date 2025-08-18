@@ -95,11 +95,12 @@ export default function Home() {
 
   const isLoading = analyzeImageMutation.isPending || generateRepliesMutation.isPending || pickupLinesMutation.isPending;
 
-  const handleManualSubmit = (text: string) => {
+  const handleManualSubmit = (text: string, tone: string) => {
     setCurrentText(text);
+    setSelectedTone(tone);
     generateRepliesMutation.mutate({
       text,
-      tone: selectedTone
+      tone: tone
     });
   };
 
@@ -120,6 +121,40 @@ export default function Home() {
     setViewMode('main');
     setReplies([]);
     setCurrentText('');
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'RetroRizz AI - Chat Enhancement',
+          text: 'Check out this AI-powered chat reply generator! Upload your screenshots and get perfect replies.',
+          url: window.location.href
+        });
+      } else {
+        // Fallback for browsers that don't support Web Share API
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link Copied!",
+          description: "Share link has been copied to your clipboard",
+        });
+      }
+    } catch (error) {
+      // If sharing fails, copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link Copied!",
+          description: "Share link has been copied to your clipboard",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Share Failed",
+          description: "Unable to share or copy link",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -258,8 +293,9 @@ export default function Home() {
           <RetroButton
             variant="secondary"
             size="sm"
+            onClick={handleShare}
           >
-            <i className="fas fa-history"></i>
+            <i className="fas fa-share-alt"></i>
           </RetroButton>
         </div>
       </nav>
