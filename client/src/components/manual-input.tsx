@@ -37,17 +37,14 @@ export function ManualInput({ onSubmit, isLoading }: ManualInputProps) {
         disabled={isLoading}
       />
       
-      {/* Choose Your Vibe & Generate Section */}
-      <div className="bg-retro-cream/50 rounded-2xl p-4 border-2 border-retro-orange mt-4">
-        <h3 className="text-retro-charcoal font-bold mb-3 text-center">Choose Your Vibe</h3>
-        
+      <div className="flex gap-3 mt-4">
         {/* Tone Scroller */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto flex-1">
           {tones.map((tone) => (
             <button
               key={tone.id}
               onClick={() => setSelectedTone(tone.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium border-2 transition-all ${
+              className={`flex-shrink-0 px-3 py-2 rounded-full text-xs font-medium border-2 transition-all ${
                 selectedTone === tone.id
                   ? `${tone.color} border-retro-charcoal text-retro-charcoal retro-shadow`
                   : 'bg-retro-cream border-retro-purple text-retro-purple hover:bg-retro-purple/10'
@@ -62,10 +59,10 @@ export function ManualInput({ onSubmit, isLoading }: ManualInputProps) {
         <RetroButton 
           onClick={handleSubmit}
           disabled={isLoading || !text.trim()}
-          className="w-full bg-retro-charcoal text-retro-cream"
-          size="lg"
+          className="bg-retro-charcoal text-retro-cream flex-shrink-0"
+          size="sm"
         >
-          <i className="fas fa-paper-plane mr-2"></i>Generate Replies
+          <i className="fas fa-paper-plane mr-2"></i>Generate
         </RetroButton>
       </div>
     </section>
