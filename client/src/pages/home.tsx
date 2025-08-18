@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { UploadSection } from '@/components/upload-section';
 import { ToneSelector } from '@/components/tone-selector';
@@ -8,7 +8,6 @@ import { LoadingState } from '@/components/loading-state';
 import { RetroButton } from '@/components/retro-button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { processImageFile, validateImageFile } from '@/lib/ocr';
 
 interface Reply {
   text: string;
@@ -22,7 +21,6 @@ export default function Home() {
   const [replies, setReplies] = useState<Reply[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('main');
   const [currentText, setCurrentText] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const analyzeImageMutation = useMutation({
@@ -97,27 +95,6 @@ export default function Home() {
 
   const isLoading = analyzeImageMutation.isPending || generateRepliesMutation.isPending || pickupLinesMutation.isPending;
 
-  const handleImageUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        validateImageFile(file);
-        const base64Image = await processImageFile(file);
-        analyzeImageMutation.mutate(base64Image);
-      } catch (error) {
-        toast({
-          title: "Upload Error",
-          description: error instanceof Error ? error.message : "Failed to process image",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
   const handleManualSubmit = (text: string) => {
     setCurrentText(text);
     generateRepliesMutation.mutate({
@@ -174,42 +151,10 @@ export default function Home() {
         
         {!isLoading && viewMode === 'main' && (
           <>
-            {/* Hero Section with Upload */}
-            <section className="text-center mb-6">
-              <h2 className="text-xl font-bold text-retro-charcoal mb-2 font-retro">
-                Upload a screenshot of a chat or bio
-              </h2>
-              
-              {/* Chat Preview Cards - Retro styled */}
-              <div className="relative mb-6 flex justify-center">
-                <div className="space-y-2 transform rotate-2">
-                  <div className="w-64 h-16 bg-gradient-to-r from-retro-purple to-retro-sage rounded-2xl retro-shadow flex items-center p-3 retro-card">
-                    <div className="w-6 h-6 rounded-full bg-retro-cream mr-2"></div>
-                    <div className="text-retro-cream text-xs font-medium">Hey! That was an awesome pic! Want to tell me a funny story?</div>
-                  </div>
-                  
-                  <div className="w-64 h-16 bg-gradient-to-r from-retro-orange to-retro-pink rounded-2xl retro-shadow flex items-center p-3 retro-card transform -rotate-1">
-                    <div className="w-6 h-6 rounded-full bg-retro-charcoal mr-2"></div>
-                    <div className="text-retro-charcoal text-xs font-medium">I know exactly where I'm taking you on our first date! 😉</div>
-                  </div>
-                  
-                  <div className="w-64 h-14 bg-gradient-to-r from-retro-yellow to-retro-orange rounded-2xl retro-shadow flex items-center p-3 retro-card transform rotate-1">
-                    <div className="w-6 h-6 rounded-full bg-retro-charcoal mr-2"></div>
-                    <div className="text-retro-charcoal text-xs font-medium">We're getting a divorce and I'm keeping the puppy! 😂</div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Primary Upload Button */}
-            <RetroButton 
-              onClick={handleImageUpload}
-              disabled={isLoading}
-              className="w-full mb-4 bg-retro-charcoal text-retro-cream"
-              size="lg"
-            >
-              <i className="fas fa-camera mr-2"></i>Upload a Screenshot
-            </RetroButton>
+            <UploadSection 
+              onImageUpload={(base64Image: string) => analyzeImageMutation.mutate(base64Image)}
+              isLoading={isLoading}
+            />
 
             {/* Secondary Options */}
             <section className="space-y-3">
@@ -219,46 +164,25 @@ export default function Home() {
                 </span>
               </div>
               
-              <div className="flex gap-3">
-                <RetroButton 
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={() => setViewMode('manual')}
-                >
-                  <i className="fas fa-keyboard mr-1"></i>Enter Text
-                </RetroButton>
-                
-                <RetroButton 
-                  variant="accent"
-                  className="flex-1"
-                  onClick={handlePickupLines}
-                >
-                  <i className="fas fa-heart mr-1"></i>Pickup Lines
-                </RetroButton>
-              </div>
+              <RetroButton 
+                variant="accent"
+                className="w-full bg-retro-yellow text-retro-charcoal"
+                onClick={() => setViewMode('manual')}
+              >
+                <i className="fas fa-keyboard mr-2"></i>Enter Text Manually
+              </RetroButton>
+              
+              <RetroButton 
+                className="w-full bg-retro-pink text-retro-charcoal"
+                onClick={handlePickupLines}
+              >
+                <i className="fas fa-heart mr-2"></i>Get Pickup Lines
+              </RetroButton>
             </section>
 
-            {/* Tone Selector */}
             <ToneSelector 
               selectedTone={selectedTone}
               onToneSelect={setSelectedTone}
-            />
-
-            {/* Privacy Notice */}
-            <div className="retro-card rounded-2xl p-3 retro-shadow bg-retro-sage text-center">
-              <p className="text-retro-charcoal text-xs font-medium">
-                <i className="fas fa-shield-alt mr-1"></i>
-                Privacy First: Your chats are never stored or saved
-              </p>
-            </div>
-
-            {/* Hidden upload input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
             />
           </>
         )}
