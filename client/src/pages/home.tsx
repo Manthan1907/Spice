@@ -146,95 +146,94 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-sm mx-auto min-h-screen relative overflow-hidden">
-      {/* Mobile-first gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-purple-50 to-pink-50"></div>
+    <div className="max-w-sm mx-auto min-h-screen bg-retro-cream relative overflow-hidden">
+      {/* Retro Background Pattern */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div 
+          className="w-full h-full" 
+          style={{
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(45,55,72,0.1) 20px, rgba(45,55,72,0.1) 40px)'
+          }}
+        />
+      </div>
       
       {/* Header */}
-      <header className="relative z-10 pt-12 pb-6 px-4 text-center">
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-8 h-8 retro-card rounded-lg retro-shadow flex items-center justify-center bg-retro-charcoal">
-            <div className="w-5 h-0.5 bg-retro-cream"></div>
-            <div className="w-5 h-0.5 bg-retro-cream mt-1"></div>
-            <div className="w-5 h-0.5 bg-retro-cream mt-1"></div>
-          </div>
-          
-          <h1 className="text-4xl font-bold font-retro bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-            RIZZ
+      <header className="relative z-10 p-4 text-center">
+        <div className="retro-card rounded-2xl p-4 retro-shadow-lg mb-6">
+          <h1 className="text-3xl font-bold text-retro-charcoal mb-2 font-retro">
+            <i className="fas fa-robot mr-2"></i>RetroRizz AI
           </h1>
-          
-          <div className="w-8 h-8 retro-card rounded-lg retro-shadow flex items-center justify-center bg-retro-charcoal">
-            <i className="fas fa-plus text-retro-cream text-lg"></i>
-          </div>
+          <p className="text-retro-purple text-sm font-medium">Chat Enhancer • Privacy First</p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="px-6 pb-32 space-y-6 relative z-10">
+      <main className="px-4 pb-24 space-y-6">
         
         {isLoading && <LoadingState />}
         
         {!isLoading && viewMode === 'main' && (
           <>
-            {/* Hero Section */}
-            <section className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Upload a screenshot
+            {/* Hero Section with Upload */}
+            <section className="text-center mb-6">
+              <h2 className="text-xl font-bold text-retro-charcoal mb-2 font-retro">
+                Upload a screenshot of a chat or bio
               </h2>
-              <p className="text-lg text-gray-700 mb-6">
-                of a chat or bio
-              </p>
               
-              {/* Chat Preview Cards - Matching reference image */}
-              <div className="relative mb-8 flex justify-center">
-                <div className="space-y-2 transform rotate-3">
-                  <div className="w-72 h-20 bg-gradient-to-r from-blue-400 to-purple-500 rounded-2xl retro-shadow-lg flex items-center p-4">
-                    <div className="w-8 h-8 rounded-full bg-white/30 mr-3"></div>
-                    <div className="text-white text-sm font-medium">Hey! That was an awesome pic! I'm a big dog person myself. Want to tell me a funny doggy story?</div>
+              {/* Chat Preview Cards - Retro styled */}
+              <div className="relative mb-6 flex justify-center">
+                <div className="space-y-2 transform rotate-2">
+                  <div className="w-64 h-16 bg-gradient-to-r from-retro-purple to-retro-sage rounded-2xl retro-shadow flex items-center p-3 retro-card">
+                    <div className="w-6 h-6 rounded-full bg-retro-cream mr-2"></div>
+                    <div className="text-retro-cream text-xs font-medium">Hey! That was an awesome pic! Want to tell me a funny story?</div>
                   </div>
                   
-                  <div className="w-72 h-20 bg-gradient-to-r from-pink-400 to-purple-500 rounded-2xl retro-shadow-lg flex items-center p-4 transform -rotate-2">
-                    <div className="w-8 h-8 rounded-full bg-white/30 mr-3"></div>
-                    <div className="text-white text-sm font-medium">I know exactly where I'm taking you on our first date! 😉</div>
+                  <div className="w-64 h-16 bg-gradient-to-r from-retro-orange to-retro-pink rounded-2xl retro-shadow flex items-center p-3 retro-card transform -rotate-1">
+                    <div className="w-6 h-6 rounded-full bg-retro-charcoal mr-2"></div>
+                    <div className="text-retro-charcoal text-xs font-medium">I know exactly where I'm taking you on our first date! 😉</div>
                   </div>
                   
-                  <div className="w-72 h-16 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-2xl retro-shadow-lg flex items-center p-4 transform rotate-1">
-                    <div className="w-8 h-8 rounded-full bg-white/30 mr-3"></div>
-                    <div className="text-gray-800 text-sm font-medium">Ok that's it! We're getting a divorce and I'm keeping the puppy lol 😂</div>
+                  <div className="w-64 h-14 bg-gradient-to-r from-retro-yellow to-retro-orange rounded-2xl retro-shadow flex items-center p-3 retro-card transform rotate-1">
+                    <div className="w-6 h-6 rounded-full bg-retro-charcoal mr-2"></div>
+                    <div className="text-retro-charcoal text-xs font-medium">We're getting a divorce and I'm keeping the puppy! 😂</div>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* Upload Button - Primary CTA */}
-            <div className="mb-6">
-              <RetroButton 
-                onClick={handleImageUpload}
-                disabled={isLoading}
-                className="w-full h-14 bg-black text-white text-lg font-semibold"
-                size="lg"
-              >
-                Upload a Screenshot
-              </RetroButton>
-            </div>
+            {/* Primary Upload Button */}
+            <RetroButton 
+              onClick={handleImageUpload}
+              disabled={isLoading}
+              className="w-full mb-4 bg-retro-charcoal text-retro-cream"
+              size="lg"
+            >
+              <i className="fas fa-camera mr-2"></i>Upload a Screenshot
+            </RetroButton>
 
             {/* Secondary Options */}
             <section className="space-y-3">
+              <div className="text-center">
+                <span className="text-retro-purple font-medium text-sm bg-retro-cream px-4 py-2 rounded-full border-2 border-retro-purple">
+                  OR
+                </span>
+              </div>
+              
               <div className="flex gap-3">
                 <RetroButton 
-                  variant="outline"
-                  className="flex-1 bg-white text-gray-800 border-2 border-gray-300"
+                  variant="secondary"
+                  className="flex-1"
                   onClick={() => setViewMode('manual')}
                 >
-                  Enter Text Manually
+                  <i className="fas fa-keyboard mr-1"></i>Enter Text
                 </RetroButton>
                 
                 <RetroButton 
-                  variant="outline"
-                  className="flex-1 bg-white text-gray-800 border-2 border-gray-300"
+                  variant="accent"
+                  className="flex-1"
                   onClick={handlePickupLines}
                 >
-                  Get Pickup Lines
+                  <i className="fas fa-heart mr-1"></i>Pickup Lines
                 </RetroButton>
               </div>
             </section>
@@ -244,6 +243,14 @@ export default function Home() {
               selectedTone={selectedTone}
               onToneSelect={setSelectedTone}
             />
+
+            {/* Privacy Notice */}
+            <div className="retro-card rounded-2xl p-3 retro-shadow bg-retro-sage text-center">
+              <p className="text-retro-charcoal text-xs font-medium">
+                <i className="fas fa-shield-alt mr-1"></i>
+                Privacy First: Your chats are never stored or saved
+              </p>
+            </div>
 
             {/* Hidden upload input */}
             <input
@@ -308,20 +315,27 @@ export default function Home() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
-        <div className="flex justify-center space-x-16">
-          <button 
+      <nav className="absolute bottom-4 left-4 right-4">
+        <div className="retro-card rounded-2xl p-3 retro-shadow-lg flex justify-center space-x-4">
+          <RetroButton
+            size="sm"
             onClick={resetToMain}
-            className="p-3 rounded-lg"
+            className={viewMode === 'main' ? 'ring-4 ring-retro-charcoal' : ''}
           >
-            <div className="w-6 h-6 bg-gray-800 rounded"></div>
-          </button>
-          <button className="p-3 rounded-lg">
-            <div className="w-6 h-6 bg-gray-400 rounded-full"></div>
-          </button>
-          <button className="p-3 rounded-lg">
-            <div className="w-6 h-4 bg-gray-400"></div>
-          </button>
+            <i className="fas fa-home"></i>
+          </RetroButton>
+          <RetroButton
+            variant="accent"
+            size="sm"
+          >
+            <i className="fas fa-cog"></i>
+          </RetroButton>
+          <RetroButton
+            variant="secondary"
+            size="sm"
+          >
+            <i className="fas fa-history"></i>
+          </RetroButton>
         </div>
       </nav>
     </div>
