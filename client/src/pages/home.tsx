@@ -151,6 +151,11 @@ export default function Home() {
         
         {!isLoading && viewMode === 'main' && (
           <>
+            <ToneSelector 
+              selectedTone={selectedTone}
+              onToneSelect={setSelectedTone}
+            />
+
             <UploadSection 
               onImageUpload={(base64Image: string) => analyzeImageMutation.mutate(base64Image)}
               isLoading={isLoading}
@@ -179,11 +184,6 @@ export default function Home() {
                 <i className="fas fa-heart mr-2"></i>Get Pickup Lines
               </RetroButton>
             </section>
-
-            <ToneSelector 
-              selectedTone={selectedTone}
-              onToneSelect={setSelectedTone}
-            />
           </>
         )}
 
