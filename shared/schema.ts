@@ -31,7 +31,7 @@ export const insertChatAnalysisSchema = createInsertSchema(chatAnalysis).pick({
 export const generateRepliesSchema = z.object({
   text: z.string().min(1, "Text is required"),
   tone: z.enum(["flirty", "funny", "respectful", "sarcastic"]).default("flirty"),
-  bypassCache: z.boolean().optional().default(false),
+  bypassCache: z.boolean().optional().default(false)
 });
 
 export const ocrSchema = z.object({

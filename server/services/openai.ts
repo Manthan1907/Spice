@@ -9,6 +9,9 @@ const openai = new OpenAI({
 const responseCache = new Map<string, { response: any, timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Track consecutive requests to same content
+const requestTracker = new Map<string, { count: number, lastRequest: number }>();
+
 function getCacheKey(text: string, tone: string): string {
   return `${text.toLowerCase().trim()}_${tone}`;
 }
@@ -39,9 +42,25 @@ export interface ReplyResponse {
 
 export async function generateReplies(text: string, tone: string, bypassCache: boolean = false): Promise<ReplyResponse> {
   try {
+    const cacheKey = getCacheKey(text, tone);
+    // Check for rapid consecutive requests (Generate More behavior)
+    const tracker = requestTracker.get(cacheKey);
+    const now = Date.now();
+    let isConsecutiveRequest = false;
+    
+    if (tracker && (now - tracker.lastRequest) < 5000) { // Within 5 seconds
+      tracker.count++;
+      tracker.lastRequest = now;
+      isConsecutiveRequest = tracker.count > 1;
+    } else {
+      requestTracker.set(cacheKey, { count: 1, lastRequest: now });
+    }
+    
+    // Force bypass for consecutive requests (Generate More clicks)
+    const shouldBypass = bypassCache || isConsecutiveRequest;
+    
     // Only check cache if NOT bypassing
-    if (!bypassCache) {
-      const cacheKey = getCacheKey(text, tone);
+    if (!shouldBypass) {
       const cachedResponse = getCachedResponse(cacheKey);
       if (cachedResponse) {
         return cachedResponse;
@@ -58,7 +77,7 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
 
     const moodInstruction = moodInstructions[tone as keyof typeof moodInstructions] || moodInstructions.flirty;
     
-    const randomSeed = bypassCache ? ` Vary your response style (seed: ${Math.random().toString(36).substr(2, 5)}).` : '';
+    const randomSeed = shouldBypass ? ` Vary your response style (seed: ${Math.random().toString(36).substr(2, 5)}).` : '';
     const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message.${randomSeed} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
@@ -70,12 +89,12 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
         },
         {
           role: "user",
-          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.${bypassCache ? ` Make it unique and different from previous responses.` : ''}`
+          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.${shouldBypass ? ` Make it unique and different from previous responses.` : ''}`
         }
       ],
       response_format: { type: "json_object" },
       max_tokens: 50, // Very short responses
-      temperature: bypassCache ? 0.9 : 0.8 // Higher randomness for fresh replies
+      temperature: shouldBypass ? 0.9 : 0.8 // Higher randomness for fresh replies
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -90,8 +109,7 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
     };
 
     // Cache the response (unless bypassing cache)
-    if (!bypassCache) {
-      const cacheKey = getCacheKey(text, tone);
+    if (!shouldBypass) {
       setCachedResponse(cacheKey, finalResponse);
     }
     

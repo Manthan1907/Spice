@@ -108,8 +108,7 @@ export default function Home() {
     if (currentText) {
       generateRepliesMutation.mutate({
         text: currentText,
-        tone: selectedTone,
-        bypassCache: true
+        tone: selectedTone
       });
     }
   };
