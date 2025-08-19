@@ -56,7 +56,7 @@ export async function generateReplies(text: string, tone: string): Promise<Reply
 
     const moodInstruction = moodInstructions[tone as keyof typeof moodInstructions] || moodInstructions.flirty;
     
-    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's natural, short (1-3 lines), human-like texting style. ${moodInstruction} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
+    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message. JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -67,12 +67,12 @@ export async function generateReplies(text: string, tone: string): Promise<Reply
         },
         {
           role: "user",
-          content: `Generate a ${tone} reply for this message: "${text}"`
+          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.`
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 100, // Limit tokens for faster response
-      temperature: 0.8, // Slightly lower for faster processing
+      max_tokens: 50, // Very short responses
+      temperature: 0.8
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -105,8 +105,8 @@ export async function analyzeImageWithVision(base64Image: string): Promise<strin
           role: "user",
           content: [
             {
-              type: "text",
-              text: "Extract and transcribe all text from this chat screenshot. Focus on the conversation messages and return only the text content without any formatting or metadata. If there are multiple messages, separate them with line breaks."
+              type: "text", 
+              text: "Extract all text from this chat screenshot. Identify each message and put the LAST/MOST RECENT message at the END. Format as: [earlier messages...]\nLAST MESSAGE: [the most recent message]"
             },
             {
               type: "image_url",
@@ -159,7 +159,7 @@ Generate exactly 1 pickup line. Respond with JSON in this format: { "replies": [
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 80, // Limit tokens for pickup lines
+      max_tokens: 40, // Very short pickup lines
       temperature: 0.8,
     });
 
