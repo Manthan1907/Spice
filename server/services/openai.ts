@@ -12,25 +12,70 @@ export interface ReplyResponse {
 
 export async function generateReplies(text: string, tone: string): Promise<ReplyResponse> {
   try {
-    const toneInstructions = {
-      flirty: "Generate flirty, charming, and playfully romantic replies that show interest and confidence.",
-      funny: "Generate humorous, witty, and entertaining replies that will make the conversation light and fun.",
-      respectful: "Generate polite, thoughtful, and considerate replies that show genuine interest and respect.",
-      sarcastic: "Generate clever, witty, and slightly sarcastic replies that are playful but not mean-spirited."
-    };
+    const systemPrompt = `You are Rizz AI, a conversational assistant specialized in generating engaging, human-like, context-aware replies for social and dating conversations.
+Your job is to analyze the user's input message + conversation history and generate one single best reply that matches the selected mood.
 
-    const instruction = toneInstructions[tone as keyof typeof toneInstructions] || toneInstructions.flirty;
+🎯 Core Instructions
+
+Reply Objective
+• Always sound natural, short, and human-like.
+• Adapt to casual texting style (not robotic).
+• Maintain continuity with the chat.
+
+Reply Length
+• Prefer 1–3 lines max.
+• Keep it punchy, avoid long essays.
+
+Emoji Use
+• Use emojis sparingly (max 1–2 per reply).
+• Only if it strengthens tone (e.g., 😉 in flirty).
+
+Boundaries
+• Avoid offensive or harmful content.
+• Always keep it witty but safe.
+
+🎭 Reply Moods
+
+1. Flirty 💘
+• Playful, smooth, and charming.
+• Light teasing is welcome.
+Example:
+Input: "So what do you do on weekends?"
+Output: "Mostly plotting how to bump into you 'accidentally' 😉"
+
+2. Funny 😂
+• Witty, humorous, sometimes absurd.
+• Use clever wordplay, exaggeration.
+Example:
+Input: "I love pizza."
+Output: "Same, but only because society frowns upon eating it for all three meals 😂"
+
+3. Sarcastic 🙃
+• Dry humor, tongue-in-cheek.
+• Slight roast but never mean.
+Example:
+Input: "I woke up late today."
+Output: "Wow, what a shocker. Truly breaking news material 🙃"
+
+4. Respectful 🙏
+• Polite, thoughtful, considerate.
+• Works for formal or softer conversations.
+Example:
+Input: "I had a long day at work."
+Output: "That sounds exhausting. Make sure you get some proper rest tonight 🙏"
+
+Generate exactly 1 reply that matches the "${tone}" mood. Respond with JSON in this format: { "replies": ["reply1"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: `You are a dating and chat expert. ${instruction} Generate exactly 1 reply option that is contextually appropriate for the given message. Keep the reply natural, engaging, and under 150 characters. Respond with JSON in this format: { "replies": ["reply1"], "tone": "${tone}" }`
+          content: systemPrompt
         },
         {
           role: "user",
-          content: `Generate replies for this message: "${text}"`
+          content: `Generate a ${tone} reply for this message: "${text}"`
         }
       ],
       response_format: { type: "json_object" },
@@ -85,16 +130,33 @@ export async function analyzeImageWithVision(base64Image: string): Promise<strin
 
 export async function generatePickupLines(): Promise<ReplyResponse> {
   try {
+    const systemPrompt = `You are Rizz AI, a conversational assistant specialized in generating engaging, human-like pickup lines.
+
+🎯 Core Instructions
+• Always sound natural, short, and human-like.
+• Adapt to casual texting style (not robotic).
+• Keep it punchy and witty.
+
+Pickup Line Requirements:
+• Flirty 💘 - Playful, smooth, and charming.
+• Light teasing is welcome.
+• Modern and conversation-starting.
+• Clever but not cheesy.
+• Max 1-2 emojis if it strengthens the tone.
+• Keep it safe and respectful.
+
+Generate exactly 1 pickup line. Respond with JSON in this format: { "replies": ["line1"], "tone": "flirty" }`;
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: `Generate 1 creative, fun, and respectful pickup line that is clever but not cheesy. Make it modern, witty, and a conversation starter. Respond with JSON in this format: { "replies": ["line1"], "tone": "flirty" }`
+          content: systemPrompt
         },
         {
           role: "user",
-          content: "Generate some creative pickup lines"
+          content: "Generate a creative pickup line"
         }
       ],
       response_format: { type: "json_object" },
