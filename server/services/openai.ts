@@ -218,63 +218,110 @@ If you cannot clearly read the text, respond with: "I'm unable to extract clear 
 
 export async function generatePickupLines(bypassCache: boolean = false): Promise<ReplyResponse> {
   try {
-    // Use curated realistic pickup lines instead of AI generation to ensure quality
-    const realisticLines = [
-      "Your energy is contagious",
-      "I had to come say hi", 
-      "You seem like someone worth knowing",
-      "What's your story?",
-      "You look like trouble... the good kind",
-      "Your smile just made my day better",
-      "I'm getting major good vibes from you",
-      "Something tells me you're fun to be around",
-      "You caught my attention from across the room",
-      "I have a feeling we'd get along",
-      "You look like someone with great stories",
-      "There's something magnetic about you",
-      "I'm curious about what makes you smile like that",
-      "You seem like the kind of person I'd want to know",
-      "Your vibe is exactly what I needed today",
-      "Mind if I join you?",
-      "You have incredible style",
-      "I love your confidence",
-      "You seem like my kind of person",
-      "There's something special about you",
-      "I couldn't walk by without saying hi",
-      "You have the best laugh",
-      "I'm drawn to your energy",
-      "You seem like someone I'd want to know better",
-      "Your presence just lit up this place"
-    ];
-
-    const cacheKey = `pickup_lines_${Math.floor(Date.now() / 300000)}`; // 5-minute tracking
+    const cacheKey = `pickup_lines_${Math.floor(Date.now() / 60000)}`; // 1-minute tracking
     
-    // Get previously used lines from request tracker for uniqueness
+    // Check for rapid consecutive requests (Generate More behavior)
     const tracker = requestTracker.get(cacheKey);
-    const previousReplies = tracker?.previousReplies || [];
+    const now = Date.now();
+    let isConsecutiveRequest = false;
+    let previousReplies: string[] = [];
     
-    // Find unused lines
-    const availableLines = realisticLines.filter(line => !previousReplies.includes(line));
+    if (tracker && (now - tracker.lastRequest) < 10000) { // Within 10 seconds
+      tracker.count++;
+      tracker.lastRequest = now;
+      isConsecutiveRequest = tracker.count > 1;
+      previousReplies = tracker.previousReplies || [];
+    } else {
+      requestTracker.set(cacheKey, { count: 1, lastRequest: now, previousReplies: [] });
+    }
     
-    // If all lines used recently, reset and use any line
-    const linesToChooseFrom = availableLines.length > 0 ? availableLines : realisticLines;
+    // Force bypass for consecutive requests (Generate More clicks)
+    const shouldBypass = bypassCache || isConsecutiveRequest;
     
-    // Pick random line
-    const selectedLine = linesToChooseFrom[Math.floor(Math.random() * linesToChooseFrom.length)];
+    // Create uniqueness instructions based on previous responses
+    const uniquenessInstruction = previousReplies.length > 0 
+      ? ` IMPORTANT: Do NOT repeat these previous pickup lines: ${previousReplies.map(r => `"${r}"`).join(', ')}. Generate something completely different.`
+      : '';
     
+    const randomSeed = shouldBypass ? ` (Style variant #${tracker?.count || 1})` : '';
+    
+    const pickupLineCategories = [
+      "smooth and confident opener",
+      "playful flirty tease", 
+      "witty conversation starter",
+      "charming direct approach",
+      "clever observational pickup line",
+      "bold but respectful line",
+      "funny pickup line",
+      "sweet romantic opener"
+    ];
+    
+    const selectedCategory = pickupLineCategories[Math.floor(Math.random() * pickupLineCategories.length)];
+    
+    const systemPrompt = `You are Rizz AI, a pickup line expert. Generate actual PICKUP LINES - not just compliments or conversation starters, but flirty lines meant to show romantic interest and charm someone.
+
+🎯 PICKUP LINE REQUIREMENTS:
+• Must be a proper pickup line that shows romantic/flirty interest
+• Sound confident, charming, and playful
+• ${selectedCategory} style approach
+• Modern dating/texting style that actually works
+• Not just a compliment - should have pickup line energy
+
+GOOD Pickup Line Examples:
+• "Do you believe in love at first sight, or should I walk by again?"
+• "Are you my appendix? Because I have this gut feeling I should take you out"
+• "If you were a triangle, you'd be acute one"
+• "Is your name Google? Because you have everything I've been searching for"
+• "I must be a snowflake, because I've fallen for you"
+• "Are you a parking ticket? Because you've got FINE written all over you"
+
+Style Guidelines:
+• Keep it punchy and memorable (8-15 words max)
+• Include flirty/romantic intent - not just friendly
+• Can be slightly cheesy but still clever
+• Use 0-1 emojis maximum
+• Make it sound like an actual pickup line, not a compliment
+
+${randomSeed}${uniquenessInstruction}
+
+Generate 1 clever ${selectedCategory}. JSON: { "replies": ["line"], "tone": "flirty" }`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: `Generate a creative ${selectedCategory} pickup line that shows romantic interest.${shouldBypass ? ' Make it unique and completely different from any previous lines.' : ''}${uniquenessInstruction}
+
+MUST BE A PICKUP LINE - not just a compliment or conversation starter, but an actual flirty line with romantic intent.`
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 60,
+      temperature: shouldBypass ? 0.9 : 0.8,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    
+    if (!result.replies || !Array.isArray(result.replies)) {
+      throw new Error("Invalid response format from OpenAI");
+    }
+
     const finalResponse = {
-      replies: [selectedLine],
-      tone: "flirty" as const
+      replies: result.replies.slice(0, 1),
+      tone: "flirty"
     };
 
-    // Update tracker with new line
-    const currentTracker = requestTracker.get(cacheKey) || { count: 1, lastRequest: Date.now(), previousReplies: [] };
-    currentTracker.previousReplies.push(selectedLine);
-    // Keep only last 15 lines to prevent memory buildup
-    if (currentTracker.previousReplies.length > 15) {
-      currentTracker.previousReplies.shift();
+    // Store the new pickup line in tracker for uniqueness checking
+    const currentTracker = requestTracker.get(cacheKey);
+    if (currentTracker) {
+      currentTracker.previousReplies.push(finalResponse.replies[0]);
+      // Keep only last 8 pickup lines to avoid overly long history
+      if (currentTracker.previousReplies.length > 8) {
+        currentTracker.previousReplies.shift();
+      }
     }
-    requestTracker.set(cacheKey, currentTracker);
 
     return finalResponse;
   } catch (error) {
