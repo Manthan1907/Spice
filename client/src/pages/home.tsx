@@ -307,12 +307,14 @@ export default function Home() {
           >
             <i className="fas fa-home"></i>
           </RetroButton>
+          {/* Settings button hidden for now - can be implemented later
           <RetroButton
             variant="accent"
             size="sm"
           >
             <i className="fas fa-cog"></i>
           </RetroButton>
+          */}
           <RetroButton
             variant="secondary"
             size="sm"
