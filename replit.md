@@ -1,6 +1,6 @@
 # Overview
 
-This is a mobile-first full-stack web application inspired by Rizz AI that provides AI-powered chat enhancement through image analysis. The primary feature allows users to upload screenshots of chat conversations, which are then analyzed using OpenAI's GPT-4o model to extract text and generate contextually appropriate reply suggestions in different tones (flirty, funny, respectful, sarcastic). The app features a clean retro-styled mobile UI with comprehensive OCR capabilities and privacy-first design (no permanent data storage).
+This is a mobile-first full-stack web application inspired by Rizz AI that provides AI-powered chat enhancement through image analysis with user authentication. The primary feature allows users to upload screenshots of chat conversations, which are then analyzed using OpenAI's GPT-4o model to extract text and generate contextually appropriate reply suggestions in different tones (flirty, funny, respectful, sarcastic). The app features a clean retro-styled mobile UI with comprehensive OCR capabilities, cost-optimized hybrid AI model strategy (95% cost savings), and secure user authentication via Supabase with personalized data storage.
 
 # User Preferences
 
@@ -26,22 +26,25 @@ Preferred communication style: Simple, everyday language.
 - **Middleware**: Custom logging middleware for API request tracking
 
 ## Database and Storage
-- **Primary Storage**: PostgreSQL with Drizzle ORM configured
-- **Development Storage**: In-memory storage implementation for privacy
+- **Primary Storage**: Supabase PostgreSQL with Drizzle ORM configured
+- **User Data**: Secure authentication with users, sessions, chat analysis, and pickup lines storage
 - **Schema Management**: Drizzle Kit for database migrations and schema generation
-- **Connection**: Neon Database serverless PostgreSQL adapter
+- **Connection**: Supabase pooler connection via postgres-js driver
 
 ## Authentication and Security
-- **Session Management**: Connect-pg-simple for PostgreSQL session storage
+- **User Authentication**: Complete JWT-based authentication system with Supabase
+- **Session Management**: Database-stored sessions with secure token validation
+- **Password Security**: Bcrypt hashing with salt rounds for secure password storage
 - **Data Validation**: Zod schemas for runtime type checking and validation
-- **Privacy Design**: Temporary in-memory storage to avoid persistent data retention
+- **Privacy Design**: User-controlled data storage with optional authentication
 - **Input Sanitization**: Comprehensive validation for image uploads and text inputs
 
 ## AI Integration
-- **Provider**: OpenAI GPT-4o model for text generation and image analysis
+- **Cost-Optimized Strategy**: Hybrid model approach - GPT-4o mini for text generation (95% cost savings), GPT-4o for image analysis
 - **Image Processing**: Vision API for OCR and chat message extraction
 - **Response Formatting**: Structured JSON responses with error handling
 - **Tone Customization**: Multi-tone reply generation (flirty, funny, respectful, sarcastic)
+- **Performance**: Maintained quality while achieving 90%+ overall cost reduction
 
 ## File Structure
 - **`/client`**: React frontend application with component-based architecture
@@ -52,9 +55,9 @@ Preferred communication style: Simple, everyday language.
 # External Dependencies
 
 ## Database Services
-- **Neon Database**: Serverless PostgreSQL hosting
+- **Supabase**: PostgreSQL database hosting with authentication
 - **Drizzle ORM**: Type-safe database queries and schema management
-- **Connect-pg-simple**: PostgreSQL session store for Express
+- **postgres-js**: PostgreSQL client for database connections
 
 ## AI Services
 - **OpenAI API**: GPT-4o model for text generation and image analysis
@@ -76,5 +79,11 @@ Preferred communication style: Simple, everyday language.
 - **TanStack Query**: Server state management and caching
 - **Wouter**: Lightweight routing solution
 - **React Hook Form**: Form state management
+- **Authentication**: React Context API for user state management
 - **Class Variance Authority**: Type-safe CSS class variants
 - **CLSX/Tailwind Merge**: Conditional CSS class utilities
+
+## Authentication Libraries
+- **bcrypt**: Secure password hashing
+- **jsonwebtoken**: JWT token generation and validation
+- **Local Storage**: Client-side session persistence

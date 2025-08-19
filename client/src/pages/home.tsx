@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { UploadSection } from '@/components/upload-section';
 import { ToneSelector } from '@/components/tone-selector';
 import { RepliesSection } from '@/components/replies-section';
@@ -7,7 +8,11 @@ import { ManualInput } from '@/components/manual-input';
 import { LoadingState } from '@/components/loading-state';
 import { RetroButton } from '@/components/retro-button';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { apiRequest } from '@/lib/queryClient';
+import { AuthService } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { User, LogOut } from 'lucide-react';
 
 interface Reply {
   text: string;
@@ -24,6 +29,16 @@ export default function Home() {
   const [contentMode, setContentMode] = useState<ContentMode>('chat');
   const [currentText, setCurrentText] = useState('');
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleAuthAction = () => {
+    if (isAuthenticated) {
+      logout();
+    } else {
+      setLocation('/auth');
+    }
+  };
 
   const analyzeImageMutation = useMutation({
     mutationFn: async (base64Image: string) => {
@@ -50,10 +65,21 @@ export default function Home() {
 
   const generateRepliesMutation = useMutation({
     mutationFn: async ({ text, tone }: { text: string; tone: string }) => {
-      const response = await apiRequest('POST', '/api/generate-replies', {
-        text,
-        tone
+      const headers = isAuthenticated ? AuthService.getAuthHeader() : {};
+      const response = await fetch('/api/generate-replies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+        body: JSON.stringify({ text, tone }),
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to generate replies');
+      }
+
       return await response.json();
     },
     onSuccess: (data) => {
@@ -76,7 +102,21 @@ export default function Home() {
 
   const pickupLinesMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/pickup-lines', {});
+      const headers = isAuthenticated ? AuthService.getAuthHeader() : {};
+      const response = await fetch('/api/pickup-lines', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to generate pickup lines');
+      }
+
       return await response.json();
     },
     onSuccess: (data) => {
@@ -177,12 +217,57 @@ export default function Home() {
       </div>
       
       {/* Header */}
-      <header className="relative z-10 p-4 text-center">
-        <div className="retro-card rounded-2xl p-4 retro-shadow-lg mb-6">
-          <h1 className="text-3xl font-bold text-retro-charcoal mb-2 font-retro">
-            <i className="fas fa-robot mr-2"></i>RetroRizz AI
-          </h1>
-          <p className="text-retro-purple text-sm font-medium">Chat Enhancer • Privacy First</p>
+      <header className="relative z-10 p-4">
+        {/* Auth Section */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-2">
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-2 text-retro-charcoal">
+                <User size={16} />
+                <span className="text-sm font-medium">
+                  {user?.username || user?.email}
+                </span>
+              </div>
+            ) : (
+              <div className="text-retro-purple text-sm">
+                Welcome, Guest
+              </div>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant={isAuthenticated ? "outline" : "default"}
+            onClick={handleAuthAction}
+            className={isAuthenticated 
+              ? "border-red-300 text-red-600 hover:bg-red-50" 
+              : "bg-retro-purple text-white hover:bg-retro-purple/90"
+            }
+          >
+            {isAuthenticated ? (
+              <>
+                <LogOut size={14} className="mr-1" />
+                Logout
+              </>
+            ) : (
+              <>
+                <User size={14} className="mr-1" />
+                Login
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Title Section */}
+        <div className="text-center">
+          <div className="retro-card rounded-2xl p-4 retro-shadow-lg mb-6">
+            <h1 className="text-3xl font-bold text-retro-charcoal mb-2 font-retro">
+              <i className="fas fa-robot mr-2"></i>RetroRizz AI
+            </h1>
+            <p className="text-retro-purple text-sm font-medium">
+              Chat Enhancer • Privacy First
+              {isAuthenticated && <span className="ml-2">• Personalized</span>}
+            </p>
+          </div>
         </div>
       </header>
 
