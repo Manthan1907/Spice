@@ -189,7 +189,22 @@ export default function Home() {
       {/* Main Content */}
       <main className="px-4 pb-24 space-y-6">
         
-        {isLoading && <LoadingState />}
+        {isLoading && (
+          <LoadingState 
+            message={
+              pickupLinesMutation.isPending 
+                ? "Crafting irresistible pickup lines just for you..."
+                : analyzeImageMutation.isPending 
+                ? "Analyzing chat screenshot for perfect context..."
+                : "Generating perfect replies with the right tone..."
+            }
+            icon={
+              pickupLinesMutation.isPending 
+                ? "fas fa-heart fa-beat"
+                : "fas fa-cog fa-spin"
+            }
+          />
+        )}
         
         {!isLoading && viewMode === 'main' && (
           <>
