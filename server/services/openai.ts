@@ -69,12 +69,12 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
       }
     }
 
-    // Optimized shorter prompt for faster processing
+    // Enhanced mood instructions for more diverse responses
     const moodInstructions = {
-      flirty: "Playful, smooth, charming. Light teasing welcome. Max 1-2 emojis.",
-      funny: "Witty, humorous, absurd. Clever wordplay. Max 1-2 emojis.", 
-      sarcastic: "Dry humor, tongue-in-cheek. Slight roast but never mean. Max 1-2 emojis.",
-      respectful: "Polite, thoughtful, considerate. Max 1-2 emojis."
+      flirty: "Playful, smooth, charming with romantic undertones. Use pickup lines, compliments, or playful teasing. Vary between sweet and confident approaches. Max 1-2 emojis.",
+      funny: "Witty, humorous, clever with jokes, puns, or absurd humor. Use wordplay, funny observations, or playful roasts. Vary between dad jokes and witty comebacks. Max 1-2 emojis.", 
+      sarcastic: "Dry humor, witty comebacks, tongue-in-cheek responses. Use irony, playful roasts, or clever observations. Vary between subtle and obvious sarcasm. Max 1-2 emojis.",
+      respectful: "Polite, thoughtful, genuine responses. Use encouragement, understanding, or thoughtful questions. Vary between supportive and curious approaches. Max 1-2 emojis."
     };
 
     const moodInstruction = moodInstructions[tone as keyof typeof moodInstructions] || moodInstructions.flirty;
@@ -84,8 +84,17 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
       ? ` IMPORTANT: Do NOT repeat these previous responses: ${previousReplies.map(r => `"${r}"`).join(', ')}. Generate something completely different.`
       : '';
     
-    const randomSeed = shouldBypass ? ` (Variation ${tracker?.count || 1}: ${Math.random().toString(36).substr(2, 5)})` : '';
-    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message.${randomSeed}${uniquenessInstruction} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
+    // Enhanced system prompt for more diverse and context-aware responses
+    const randomSeed = shouldBypass ? ` (Style variant #${tracker?.count || 1})` : '';
+    const contextInstruction = `Read the ENTIRE conversation for context, but respond ONLY to the most recent message.`;
+    
+    const systemPrompt = `You are Rizz AI, a witty conversation assistant. Generate 1 ${tone} reply that's SHORT (max 15 words) and perfectly matches the conversation context. 
+
+${moodInstruction}
+
+${contextInstruction} Make your response feel natural and human-like - as if texting a friend. Avoid generic responses.${randomSeed}${uniquenessInstruction}
+
+JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -96,12 +105,22 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
         },
         {
           role: "user",
-          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.${shouldBypass ? ` Make it unique and completely different from any previous responses.` : ''}${uniquenessInstruction}`
+          content: `Full conversation context:
+${text}
+
+Generate a ${tone} reply to the LAST message that:
+1. Shows you understand the conversation context
+2. Responds specifically to what was just said
+3. Matches the ${tone} tone perfectly
+4. Feels natural and human (not robotic)
+5. Stays under 15 words
+
+${shouldBypass ? 'IMPORTANT: Make this response completely unique and different from any previous responses.' : ''}${uniquenessInstruction}`
         }
       ],
       response_format: { type: "json_object" },
       max_tokens: 50, // Very short responses
-      temperature: shouldBypass ? 0.9 : 0.8 // Higher randomness for fresh replies
+      temperature: shouldBypass ? 0.95 : 0.8 // Higher creativity for more diverse responses
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -143,11 +162,24 @@ export async function analyzeImageWithVision(base64Image: string): Promise<strin
       model: "gpt-4o",
       messages: [
         {
+          role: "system",
+          content: "You are an expert at reading chat screenshots and extracting conversation text accurately. Focus on identifying who said what and the exact message content."
+        },
+        {
           role: "user",
           content: [
             {
               type: "text", 
-              text: "Extract all text from this chat screenshot. Identify each message and put the LAST/MOST RECENT message at the END. Format as: [earlier messages...]\nLAST MESSAGE: [the most recent message]"
+              text: `Please carefully examine this chat screenshot and extract ALL visible text messages in the conversation. 
+
+IMPORTANT INSTRUCTIONS:
+1. Read ALL messages visible in the image, from top to bottom
+2. Include sender names/avatars if visible (like "John:", "Sarah:", etc.)
+3. Preserve the exact wording and emojis 
+4. Identify which message appears LAST/MOST RECENT in the conversation
+5. Format the output as: [conversation context]\nLAST MESSAGE: [the final/most recent message]
+
+If you cannot clearly read the text, respond with: "I'm unable to extract clear text from this image. The image may be blurry, low quality, or the text is not clearly visible."`
             },
             {
               type: "image_url",
@@ -158,10 +190,26 @@ export async function analyzeImageWithVision(base64Image: string): Promise<strin
           ],
         },
       ],
-      max_tokens: 200, // Optimized for faster OCR processing
+      max_tokens: 300, // Increased for better text extraction
+      temperature: 0.1, // Low temperature for accurate OCR
     });
 
-    return visionResponse.choices[0].message.content || "";
+    const extractedText = visionResponse.choices[0].message.content || "";
+    
+    // Enhanced validation
+    if (!extractedText || extractedText.trim().length < 10) {
+      throw new Error("No readable text content found in the image");
+    }
+    
+    // Check if it's an error response
+    if (extractedText.toLowerCase().includes("unable to extract") || 
+        extractedText.toLowerCase().includes("cannot read") ||
+        extractedText.toLowerCase().includes("blurry") ||
+        extractedText.toLowerCase().includes("low quality")) {
+      throw new Error("Image quality too low or text not clearly visible");
+    }
+
+    return extractedText;
   } catch (error) {
     console.error("Error analyzing image:", error);
     throw new Error("Failed to analyze image: " + (error as Error).message);
