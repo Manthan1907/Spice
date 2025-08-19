@@ -216,14 +216,69 @@ If you cannot clearly read the text, respond with: "I'm unable to extract clear 
   }
 }
 
-export async function generatePickupLines(): Promise<ReplyResponse> {
+export async function generatePickupLines(bypassCache: boolean = false): Promise<ReplyResponse> {
   try {
+    const cacheKey = 'pickup_lines';
+    
+    // Check for rapid consecutive requests (Generate More behavior)
+    const tracker = requestTracker.get(cacheKey);
+    const now = Date.now();
+    let isConsecutiveRequest = false;
+    let previousReplies: string[] = [];
+    
+    if (tracker && (now - tracker.lastRequest) < 10000) { // Within 10 seconds
+      tracker.count++;
+      tracker.lastRequest = now;
+      isConsecutiveRequest = tracker.count > 1;
+      previousReplies = tracker.previousReplies || [];
+    } else {
+      requestTracker.set(cacheKey, { count: 1, lastRequest: now, previousReplies: [] });
+    }
+    
+    // Force bypass for consecutive requests (Generate More clicks)
+    const shouldBypass = bypassCache || isConsecutiveRequest;
+    
+    // Only check cache if NOT bypassing
+    if (!shouldBypass) {
+      const cachedResponse = getCachedResponse(cacheKey);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+    }
+
+    // Create uniqueness instructions based on previous responses
+    const uniquenessInstruction = previousReplies.length > 0 
+      ? ` IMPORTANT: Do NOT repeat these previous pickup lines: ${previousReplies.map(r => `"${r}"`).join(', ')}. Generate something completely different.`
+      : '';
+    
+    const randomSeed = shouldBypass ? ` (Style variant #${tracker?.count || 1})` : '';
+    
+    const categoryVariations = [
+      "chemistry/science themed",
+      "food and cooking",
+      "music and dance",
+      "travel and adventure",
+      "books and movies",
+      "sports and fitness",
+      "technology and gaming",
+      "art and creativity",
+      "nature and weather",
+      "smooth compliments"
+    ];
+    
+    const selectedCategory = categoryVariations[Math.floor(Math.random() * categoryVariations.length)];
+    
     const systemPrompt = `You are Rizz AI, a conversational assistant specialized in generating engaging, human-like pickup lines.
 
-🎯 Core Instructions
+🎯 CRITICAL UNIQUENESS REQUIREMENT: 
+You MUST generate a ${selectedCategory} pickup line that is completely different from any magician/disappearing references.
+
+Core Instructions:
 • Always sound natural, short, and human-like.
 • Adapt to casual texting style (not robotic).
 • Keep it punchy and witty.
+• Generate diverse styles: smooth, clever, funny, confident, sweet
+• AVOID overused lines like "Are you a magician?" - be creative!
 
 Pickup Line Requirements:
 • Flirty 💘 - Playful, smooth, and charming.
@@ -232,8 +287,11 @@ Pickup Line Requirements:
 • Clever but not cheesy.
 • Max 1-2 emojis if it strengthens the tone.
 • Keep it safe and respectful.
+• Focus on ${selectedCategory} theme
 
-Generate exactly 1 pickup line. Respond with JSON in this format: { "replies": ["line1"], "tone": "flirty" }`;
+${randomSeed}${uniquenessInstruction}
+
+Generate exactly 1 unique ${selectedCategory} pickup line. Respond with JSON in this format: { "replies": ["line1"], "tone": "flirty" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -244,12 +302,19 @@ Generate exactly 1 pickup line. Respond with JSON in this format: { "replies": [
         },
         {
           role: "user",
-          content: "Generate a creative pickup line"
+          content: `Generate a creative ${selectedCategory} pickup line.${shouldBypass ? ' Make it unique and completely different from any previous lines.' : ''}${uniquenessInstruction}
+
+BANNED PHRASES (DO NOT USE):
+- "Are you a magician"
+- "everyone else disappears"  
+- Any variation of magician/disappearing themes
+
+Generate something completely fresh and original focused on ${selectedCategory}.`
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 40, // Very short pickup lines
-      temperature: 0.8,
+      max_tokens: 50, // Increased for more variety
+      temperature: shouldBypass ? 0.95 : 0.85, // Higher creativity for more diverse lines
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -258,10 +323,55 @@ Generate exactly 1 pickup line. Respond with JSON in this format: { "replies": [
       throw new Error("Invalid response format from OpenAI");
     }
 
-    return {
+    // Check for banned/overused phrases and retry if found
+    const bannedPhrases = ["magician", "disappear", "everyone else"];
+    const generatedLine = result.replies[0]?.toLowerCase() || "";
+    
+    if (bannedPhrases.some(phrase => generatedLine.includes(phrase))) {
+      // Force retry with different category
+      const fallbackLines = [
+        "Do you have a map? Because I just got lost in your eyes 😍",
+        "Are you WiFi? Because I'm feeling a connection 📶",
+        "If you were a vegetable, you'd be a cute-cumber 🥒",
+        "Are you a parking ticket? Because you've got fine written all over you 😏",
+        "Do you believe in love at first sight, or should I walk by again? 😉",
+        "Are you a loan? Because you've got my interest 💰",
+        "If kisses were snowflakes, I'd send you a blizzard ❄️",
+        "Are you a camera? Because every time I look at you, I smile 📸"
+      ];
+      
+      // Pick a random fallback that wasn't used recently
+      let fallbackLine;
+      let attempts = 0;
+      do {
+        fallbackLine = fallbackLines[Math.floor(Math.random() * fallbackLines.length)];
+        attempts++;
+      } while (previousReplies.includes(fallbackLine) && attempts < 10);
+      
+      result.replies[0] = fallbackLine;
+    }
+
+    const finalResponse = {
       replies: result.replies.slice(0, 1),
       tone: "flirty"
     };
+
+    // Store the new pickup line in tracker for uniqueness checking
+    const currentTracker = requestTracker.get(cacheKey);
+    if (currentTracker) {
+      currentTracker.previousReplies.push(finalResponse.replies[0]);
+      // Keep only last 5 pickup lines to avoid overly long history
+      if (currentTracker.previousReplies.length > 5) {
+        currentTracker.previousReplies.shift();
+      }
+    }
+    
+    // Cache the response (unless bypassing cache)
+    if (!shouldBypass) {
+      setCachedResponse(cacheKey, finalResponse);
+    }
+
+    return finalResponse;
   } catch (error) {
     console.error("Error generating pickup lines:", error);
     throw new Error("Failed to generate pickup lines: " + (error as Error).message);

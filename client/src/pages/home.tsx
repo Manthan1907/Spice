@@ -15,11 +15,13 @@ interface Reply {
 }
 
 type ViewMode = 'main' | 'manual' | 'replies';
+type ContentMode = 'chat' | 'pickup';
 
 export default function Home() {
   const [selectedTone, setSelectedTone] = useState('flirty');
   const [replies, setReplies] = useState<Reply[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('main');
+  const [contentMode, setContentMode] = useState<ContentMode>('chat');
   const [currentText, setCurrentText] = useState('');
   const { toast } = useToast();
 
@@ -60,6 +62,7 @@ export default function Home() {
         text
       }));
       setReplies(newReplies);
+      setContentMode('chat');
       setViewMode('replies');
     },
     onError: (error) => {
@@ -82,6 +85,7 @@ export default function Home() {
         text
       }));
       setReplies(newReplies);
+      setContentMode('pickup');
       setViewMode('replies');
     },
     onError: (error) => {
@@ -105,7 +109,9 @@ export default function Home() {
   };
 
   const handleGenerateMore = () => {
-    if (currentText) {
+    if (contentMode === 'pickup') {
+      pickupLinesMutation.mutate();
+    } else if (currentText) {
       generateRepliesMutation.mutate({
         text: currentText,
         tone: selectedTone
@@ -119,6 +125,7 @@ export default function Home() {
 
   const resetToMain = () => {
     setViewMode('main');
+    setContentMode('chat');
     setReplies([]);
     setCurrentText('');
   };
@@ -268,6 +275,7 @@ export default function Home() {
               replies={replies}
               onGenerateMore={handleGenerateMore}
               isLoading={isLoading}
+              mode={contentMode}
             />
           </>
         )}

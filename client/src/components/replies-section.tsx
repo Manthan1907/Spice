@@ -11,9 +11,10 @@ interface RepliesSectionProps {
   replies: Reply[];
   onGenerateMore: () => void;
   isLoading: boolean;
+  mode?: 'chat' | 'pickup';
 }
 
-export function RepliesSection({ replies, onGenerateMore, isLoading }: RepliesSectionProps) {
+export function RepliesSection({ replies, onGenerateMore, isLoading, mode = 'chat' }: RepliesSectionProps) {
   const { toast } = useToast();
 
   const copyToClipboard = async (text: string) => {
@@ -45,7 +46,8 @@ export function RepliesSection({ replies, onGenerateMore, isLoading }: RepliesSe
   return (
     <section className="retro-card rounded-3xl p-6 retro-shadow-lg">
       <h3 className="text-lg font-bold text-retro-charcoal mb-4 text-center font-retro">
-        <i className="fas fa-magic mr-2"></i>AI Generated Replies
+        <i className={`fas ${mode === 'pickup' ? 'fa-heart' : 'fa-magic'} mr-2`}></i>
+        {mode === 'pickup' ? 'Pickup Lines' : 'AI Generated Replies'}
       </h3>
       
       <div className="space-y-3">
