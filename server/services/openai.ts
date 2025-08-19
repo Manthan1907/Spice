@@ -5,6 +5,33 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key" 
 });
 
+// Simple response cache for faster repeated requests
+const responseCache = new Map<string, { response: any, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+function getCacheKey(text: string, tone: string): string {
+  return `${text.toLowerCase().trim()}_${tone}`;
+}
+
+function getCachedResponse(cacheKey: string): any | null {
+  const cached = responseCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.response;
+  }
+  return null;
+}
+
+function setCachedResponse(cacheKey: string, response: any): void {
+  responseCache.set(cacheKey, { response, timestamp: Date.now() });
+  
+  // Clean old entries (simple cleanup)
+  if (responseCache.size > 100) {
+    const oldEntries = Array.from(responseCache.entries())
+      .filter(([, value]) => Date.now() - value.timestamp > CACHE_DURATION);
+    oldEntries.forEach(([key]) => responseCache.delete(key));
+  }
+}
+
 export interface ReplyResponse {
   replies: string[];
   tone: string;
@@ -12,59 +39,24 @@ export interface ReplyResponse {
 
 export async function generateReplies(text: string, tone: string): Promise<ReplyResponse> {
   try {
-    const systemPrompt = `You are Rizz AI, a conversational assistant specialized in generating engaging, human-like, context-aware replies for social and dating conversations.
-Your job is to analyze the user's input message + conversation history and generate one single best reply that matches the selected mood.
+    // Check cache first
+    const cacheKey = getCacheKey(text, tone);
+    const cachedResponse = getCachedResponse(cacheKey);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
 
-🎯 Core Instructions
+    // Optimized shorter prompt for faster processing
+    const moodInstructions = {
+      flirty: "Playful, smooth, charming. Light teasing welcome. Max 1-2 emojis.",
+      funny: "Witty, humorous, absurd. Clever wordplay. Max 1-2 emojis.", 
+      sarcastic: "Dry humor, tongue-in-cheek. Slight roast but never mean. Max 1-2 emojis.",
+      respectful: "Polite, thoughtful, considerate. Max 1-2 emojis."
+    };
 
-Reply Objective
-• Always sound natural, short, and human-like.
-• Adapt to casual texting style (not robotic).
-• Maintain continuity with the chat.
-
-Reply Length
-• Prefer 1–3 lines max.
-• Keep it punchy, avoid long essays.
-
-Emoji Use
-• Use emojis sparingly (max 1–2 per reply).
-• Only if it strengthens tone (e.g., 😉 in flirty).
-
-Boundaries
-• Avoid offensive or harmful content.
-• Always keep it witty but safe.
-
-🎭 Reply Moods
-
-1. Flirty 💘
-• Playful, smooth, and charming.
-• Light teasing is welcome.
-Example:
-Input: "So what do you do on weekends?"
-Output: "Mostly plotting how to bump into you 'accidentally' 😉"
-
-2. Funny 😂
-• Witty, humorous, sometimes absurd.
-• Use clever wordplay, exaggeration.
-Example:
-Input: "I love pizza."
-Output: "Same, but only because society frowns upon eating it for all three meals 😂"
-
-3. Sarcastic 🙃
-• Dry humor, tongue-in-cheek.
-• Slight roast but never mean.
-Example:
-Input: "I woke up late today."
-Output: "Wow, what a shocker. Truly breaking news material 🙃"
-
-4. Respectful 🙏
-• Polite, thoughtful, considerate.
-• Works for formal or softer conversations.
-Example:
-Input: "I had a long day at work."
-Output: "That sounds exhausting. Make sure you get some proper rest tonight 🙏"
-
-Generate exactly 1 reply that matches the "${tone}" mood. Respond with JSON in this format: { "replies": ["reply1"], "tone": "${tone}" }`;
+    const moodInstruction = moodInstructions[tone as keyof typeof moodInstructions] || moodInstructions.flirty;
+    
+    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's natural, short (1-3 lines), human-like texting style. ${moodInstruction} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -79,6 +71,8 @@ Generate exactly 1 reply that matches the "${tone}" mood. Respond with JSON in t
         }
       ],
       response_format: { type: "json_object" },
+      max_tokens: 100, // Limit tokens for faster response
+      temperature: 0.8, // Slightly lower for faster processing
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -87,10 +81,15 @@ Generate exactly 1 reply that matches the "${tone}" mood. Respond with JSON in t
       throw new Error("Invalid response format from OpenAI");
     }
 
-    return {
+    const finalResponse = {
       replies: result.replies.slice(0, 1),
       tone: tone
     };
+
+    // Cache the response
+    setCachedResponse(cacheKey, finalResponse);
+    
+    return finalResponse;
   } catch (error) {
     console.error("Error generating replies:", error);
     throw new Error("Failed to generate replies: " + (error as Error).message);
@@ -118,7 +117,7 @@ export async function analyzeImageWithVision(base64Image: string): Promise<strin
           ],
         },
       ],
-      max_tokens: 500,
+      max_tokens: 200, // Optimized for faster OCR processing
     });
 
     return visionResponse.choices[0].message.content || "";
@@ -160,6 +159,8 @@ Generate exactly 1 pickup line. Respond with JSON in this format: { "replies": [
         }
       ],
       response_format: { type: "json_object" },
+      max_tokens: 80, // Limit tokens for pickup lines
+      temperature: 0.8,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
