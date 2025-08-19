@@ -217,57 +217,15 @@ export default function Home() {
       </div>
       
       {/* Header */}
-      <header className="relative z-10 p-4">
-        {/* Auth Section */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-2">
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-2 text-retro-charcoal">
-                <User size={16} />
-                <span className="text-sm font-medium">
-                  {user?.username || user?.email}
-                </span>
-              </div>
-            ) : (
-              <div className="text-retro-purple text-sm">
-                Welcome, Guest
-              </div>
-            )}
-          </div>
-          <Button
-            size="sm"
-            variant={isAuthenticated ? "outline" : "default"}
-            onClick={handleAuthAction}
-            className={isAuthenticated 
-              ? "border-red-300 text-red-600 hover:bg-red-50" 
-              : "bg-retro-purple text-white hover:bg-retro-purple/90"
-            }
-          >
-            {isAuthenticated ? (
-              <>
-                <LogOut size={14} className="mr-1" />
-                Logout
-              </>
-            ) : (
-              <>
-                <User size={14} className="mr-1" />
-                Login
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Title Section */}
-        <div className="text-center">
-          <div className="retro-card rounded-2xl p-4 retro-shadow-lg mb-6">
-            <h1 className="text-3xl font-bold text-retro-charcoal mb-2 font-retro">
-              <i className="fas fa-robot mr-2"></i>RetroRizz AI
-            </h1>
-            <p className="text-retro-purple text-sm font-medium">
-              Chat Enhancer • Privacy First
-              {isAuthenticated && <span className="ml-2">• Personalized</span>}
-            </p>
-          </div>
+      <header className="relative z-10 p-4 text-center">
+        <div className="retro-card rounded-2xl p-4 retro-shadow-lg mb-6">
+          <h1 className="text-3xl font-bold text-retro-charcoal mb-2 font-retro">
+            <i className="fas fa-robot mr-2"></i>RetroRizz AI
+          </h1>
+          <p className="text-retro-purple text-sm font-medium">
+            Chat Enhancer • Privacy First
+            {isAuthenticated && <span className="ml-2">• Personalized</span>}
+          </p>
         </div>
       </header>
 
@@ -392,14 +350,23 @@ export default function Home() {
           >
             <i className="fas fa-home"></i>
           </RetroButton>
-          {/* Settings button hidden for now - can be implemented later
+          
           <RetroButton
-            variant="accent"
+            variant={isAuthenticated ? "secondary" : "accent"}
             size="sm"
+            onClick={handleAuthAction}
+            className={isAuthenticated 
+              ? "bg-red-100 text-red-600 border-red-300 hover:bg-red-200" 
+              : "bg-retro-purple text-white hover:bg-retro-purple/90"
+            }
           >
-            <i className="fas fa-cog"></i>
+            {isAuthenticated ? (
+              <i className="fas fa-sign-out-alt"></i>
+            ) : (
+              <i className="fas fa-user"></i>
+            )}
           </RetroButton>
-          */}
+          
           <RetroButton
             variant="secondary"
             size="sm"
