@@ -58,7 +58,8 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
 
     const moodInstruction = moodInstructions[tone as keyof typeof moodInstructions] || moodInstructions.flirty;
     
-    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message. JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
+    const randomSeed = bypassCache ? ` Vary your response style (seed: ${Math.random().toString(36).substr(2, 5)}).` : '';
+    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message.${randomSeed} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -69,7 +70,7 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
         },
         {
           role: "user",
-          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.`
+          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.${bypassCache ? ` Make it unique and different from previous responses.` : ''}`
         }
       ],
       response_format: { type: "json_object" },
