@@ -37,13 +37,15 @@ export interface ReplyResponse {
   tone: string;
 }
 
-export async function generateReplies(text: string, tone: string): Promise<ReplyResponse> {
+export async function generateReplies(text: string, tone: string, bypassCache: boolean = false): Promise<ReplyResponse> {
   try {
-    // Check cache first
-    const cacheKey = getCacheKey(text, tone);
-    const cachedResponse = getCachedResponse(cacheKey);
-    if (cachedResponse) {
-      return cachedResponse;
+    // Check cache first (unless bypassing)
+    const cacheKey = bypassCache ? `${getCacheKey(text, tone)}-${Date.now()}` : getCacheKey(text, tone);
+    if (!bypassCache) {
+      const cachedResponse = getCachedResponse(cacheKey);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
     }
 
     // Optimized shorter prompt for faster processing
@@ -72,7 +74,7 @@ export async function generateReplies(text: string, tone: string): Promise<Reply
       ],
       response_format: { type: "json_object" },
       max_tokens: 50, // Very short responses
-      temperature: 0.8
+      temperature: bypassCache ? 0.9 : 0.8 // Higher randomness for fresh replies
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -86,8 +88,10 @@ export async function generateReplies(text: string, tone: string): Promise<Reply
       tone: tone
     };
 
-    // Cache the response
-    setCachedResponse(cacheKey, finalResponse);
+    // Cache the response (unless bypassing cache)
+    if (!bypassCache) {
+      setCachedResponse(cacheKey, finalResponse);
+    }
     
     return finalResponse;
   } catch (error) {

@@ -9,9 +9,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate replies from text
   app.post("/api/generate-replies", async (req, res) => {
     try {
-      const { text, tone } = generateRepliesSchema.parse(req.body);
+      const { text, tone, bypassCache } = generateRepliesSchema.parse(req.body);
       
-      const response = await generateReplies(text, tone);
+      const response = await generateReplies(text, tone, bypassCache);
       
       // Store analysis in memory (privacy-first, no persistent storage)
       await storage.createChatAnalysis({
