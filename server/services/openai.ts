@@ -39,9 +39,9 @@ export interface ReplyResponse {
 
 export async function generateReplies(text: string, tone: string, bypassCache: boolean = false): Promise<ReplyResponse> {
   try {
-    // Check cache first (unless bypassing)
-    const cacheKey = bypassCache ? `${getCacheKey(text, tone)}-${Date.now()}` : getCacheKey(text, tone);
+    // Only check cache if NOT bypassing
     if (!bypassCache) {
+      const cacheKey = getCacheKey(text, tone);
       const cachedResponse = getCachedResponse(cacheKey);
       if (cachedResponse) {
         return cachedResponse;
@@ -91,6 +91,7 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
 
     // Cache the response (unless bypassing cache)
     if (!bypassCache) {
+      const cacheKey = getCacheKey(text, tone);
       setCachedResponse(cacheKey, finalResponse);
     }
     
