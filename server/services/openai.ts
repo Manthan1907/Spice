@@ -97,7 +97,7 @@ ${contextInstruction} Make your response feel natural and human-like - as if tex
 JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini", // Using cost-effective GPT-4o mini for text reply generation - 95% cheaper than GPT-4o
       messages: [
         {
           role: "system",
@@ -159,7 +159,7 @@ ${shouldBypass ? 'IMPORTANT: Make this response completely unique and different 
 export async function analyzeImageWithVision(base64Image: string): Promise<string> {
   try {
     const visionResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o", // Keep GPT-4o for image analysis - requires vision capabilities not available in mini version
       messages: [
         {
           role: "system",
@@ -287,7 +287,7 @@ ${randomSeed}${uniquenessInstruction}
 Generate 1 clever ${selectedCategory}. JSON: { "replies": ["line"], "tone": "flirty" }`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4o-mini", // Using cost-effective GPT-4o mini for text generation - 95% cheaper than GPT-4o
       messages: [
         { role: "system", content: systemPrompt },
         {
