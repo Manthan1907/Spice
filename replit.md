@@ -1,6 +1,6 @@
 # Overview
 
-This is a mobile-first full-stack web application inspired by Rizz AI that provides AI-powered chat enhancement through image analysis with user authentication. The primary feature allows users to upload screenshots of chat conversations, which are then analyzed using OpenAI's GPT-4o model to extract text and generate contextually appropriate reply suggestions in different tones (flirty, funny, respectful, sarcastic). The app features a clean retro-styled mobile UI with comprehensive OCR capabilities, cost-optimized hybrid AI model strategy (95% cost savings), and secure user authentication via Supabase with personalized data storage.
+Spice AI is a mobile-first full-stack web application that provides AI-powered chat enhancement through image analysis with user authentication. The primary feature allows users to upload screenshots of chat conversations, which are then analyzed using OpenAI's GPT-4o model to extract text and generate contextually appropriate reply suggestions in different tones (flirty, funny, respectful, sarcastic). The app features a clean retro-styled mobile UI with comprehensive OCR capabilities, cost-optimized hybrid AI model strategy (95% cost savings), and secure user authentication via Supabase with personalized data storage. The tagline "Add flavors to your chats" reflects the app's mission to enhance conversations with personality and style.
 
 # User Preferences
 

@@ -56,7 +56,7 @@ export default function AuthPage() {
       await register(data);
       toast({
         title: "Account created!",
-        description: "Welcome to Rizz AI. Your account has been created successfully.",
+        description: "Welcome to Spice AI. Your account has been created successfully.",
       });
       setLocation('/');
     } catch (error) {
@@ -73,13 +73,10 @@ export default function AuthPage() {
       <Card className="w-full max-w-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-2 border-pink-200 dark:border-pink-800 shadow-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent">
-            {isLogin ? 'Welcome Back' : 'Join Rizz AI'}
+            <i className="fas fa-pepper-hot mr-2"></i>Spice AI
           </CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-300">
-            {isLogin 
-              ? 'Sign in to continue your conversation journey' 
-              : 'Create an account to save your chat enhancements'
-            }
+            Add flavors to your chats • {isLogin ? 'Welcome Back' : 'Join Spice AI'}
           </CardDescription>
         </CardHeader>
 

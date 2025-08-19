@@ -174,7 +174,7 @@ export default function Home() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'RetroRizz AI - Chat Enhancement',
+          title: 'Spice AI - Add flavors to your chats',
           text: 'Check out this AI-powered chat reply generator! Upload your screenshots and get perfect replies.',
           url: window.location.href
         });
@@ -220,10 +220,10 @@ export default function Home() {
       <header className="relative z-10 p-4 text-center">
         <div className="retro-card rounded-2xl p-4 retro-shadow-lg mb-6">
           <h1 className="text-3xl font-bold text-retro-charcoal mb-2 font-retro">
-            <i className="fas fa-robot mr-2"></i>RetroRizz AI
+            <i className="fas fa-pepper-hot mr-2"></i>Spice AI
           </h1>
           <p className="text-retro-purple text-sm font-medium">
-            Chat Enhancer • Privacy First
+            Add flavors to your chats
             {isAuthenticated && <span className="ml-2">• Personalized</span>}
           </p>
         </div>
