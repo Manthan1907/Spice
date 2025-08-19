@@ -26,7 +26,7 @@ export async function generateReplies(text: string, tone: string): Promise<Reply
       messages: [
         {
           role: "system",
-          content: `You are a dating and chat expert. ${instruction} Generate exactly 3 different reply options that are contextually appropriate for the given message. Keep replies natural, engaging, and under 150 characters each. Respond with JSON in this format: { "replies": ["reply1", "reply2", "reply3"], "tone": "${tone}" }`
+          content: `You are a dating and chat expert. ${instruction} Generate exactly 1 reply option that is contextually appropriate for the given message. Keep the reply natural, engaging, and under 150 characters. Respond with JSON in this format: { "replies": ["reply1"], "tone": "${tone}" }`
         },
         {
           role: "user",
@@ -43,7 +43,7 @@ export async function generateReplies(text: string, tone: string): Promise<Reply
     }
 
     return {
-      replies: result.replies.slice(0, 3),
+      replies: result.replies.slice(0, 1),
       tone: tone
     };
   } catch (error) {
@@ -90,7 +90,7 @@ export async function generatePickupLines(): Promise<ReplyResponse> {
       messages: [
         {
           role: "system",
-          content: `Generate 3 creative, fun, and respectful pickup lines that are clever but not cheesy. Make them modern, witty, and conversation starters. Respond with JSON in this format: { "replies": ["line1", "line2", "line3"], "tone": "flirty" }`
+          content: `Generate 1 creative, fun, and respectful pickup line that is clever but not cheesy. Make it modern, witty, and a conversation starter. Respond with JSON in this format: { "replies": ["line1"], "tone": "flirty" }`
         },
         {
           role: "user",
@@ -107,7 +107,7 @@ export async function generatePickupLines(): Promise<ReplyResponse> {
     }
 
     return {
-      replies: result.replies.slice(0, 3),
+      replies: result.replies.slice(0, 1),
       tone: "flirty"
     };
   } catch (error) {
