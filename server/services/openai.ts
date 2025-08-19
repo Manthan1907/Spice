@@ -9,8 +9,8 @@ const openai = new OpenAI({
 const responseCache = new Map<string, { response: any, timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// Track consecutive requests to same content
-const requestTracker = new Map<string, { count: number, lastRequest: number }>();
+// Track consecutive requests and previous responses for uniqueness
+const requestTracker = new Map<string, { count: number, lastRequest: number, previousReplies: string[] }>();
 
 function getCacheKey(text: string, tone: string): string {
   return `${text.toLowerCase().trim()}_${tone}`;
@@ -47,16 +47,18 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
     const tracker = requestTracker.get(cacheKey);
     const now = Date.now();
     let isConsecutiveRequest = false;
+    let previousReplies: string[] = [];
     
-    if (tracker && (now - tracker.lastRequest) < 5000) { // Within 5 seconds
+    if (tracker && (now - tracker.lastRequest) < 10000) { // Within 10 seconds (more generous)
       tracker.count++;
       tracker.lastRequest = now;
       isConsecutiveRequest = tracker.count > 1;
+      previousReplies = tracker.previousReplies || [];
     } else {
-      requestTracker.set(cacheKey, { count: 1, lastRequest: now });
+      requestTracker.set(cacheKey, { count: 1, lastRequest: now, previousReplies: [] });
     }
     
-    // Force bypass for consecutive requests (Generate More clicks)
+    // Force bypass for consecutive requests (Generate More clicks) - ALWAYS for count > 1
     const shouldBypass = bypassCache || isConsecutiveRequest;
     
     // Only check cache if NOT bypassing
@@ -77,8 +79,13 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
 
     const moodInstruction = moodInstructions[tone as keyof typeof moodInstructions] || moodInstructions.flirty;
     
-    const randomSeed = shouldBypass ? ` Vary your response style (seed: ${Math.random().toString(36).substr(2, 5)}).` : '';
-    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message.${randomSeed} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
+    // Create uniqueness instructions based on previous responses
+    const uniquenessInstruction = previousReplies.length > 0 
+      ? ` IMPORTANT: Do NOT repeat these previous responses: ${previousReplies.map(r => `"${r}"`).join(', ')}. Generate something completely different.`
+      : '';
+    
+    const randomSeed = shouldBypass ? ` (Variation ${tracker?.count || 1}: ${Math.random().toString(36).substr(2, 5)})` : '';
+    const systemPrompt = `You are Rizz AI. Generate 1 ${tone} reply that's VERY SHORT (max 15 words), natural, human-like texting style. ${moodInstruction} Reply to ONLY the last message.${randomSeed}${uniquenessInstruction} JSON format: { "replies": ["reply"], "tone": "${tone}" }`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -89,7 +96,7 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
         },
         {
           role: "user",
-          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.${shouldBypass ? ` Make it unique and different from previous responses.` : ''}`
+          content: `Chat context: "${text}"\n\nGenerate a ${tone} reply to the LAST message only. Keep it under 15 words.${shouldBypass ? ` Make it unique and completely different from any previous responses.` : ''}${uniquenessInstruction}`
         }
       ],
       response_format: { type: "json_object" },
@@ -108,6 +115,16 @@ export async function generateReplies(text: string, tone: string, bypassCache: b
       tone: tone
     };
 
+    // Store the new reply in tracker for uniqueness checking
+    const currentTracker = requestTracker.get(cacheKey);
+    if (currentTracker) {
+      currentTracker.previousReplies.push(finalResponse.replies[0]);
+      // Keep only last 5 replies to avoid overly long history
+      if (currentTracker.previousReplies.length > 5) {
+        currentTracker.previousReplies.shift();
+      }
+    }
+    
     // Cache the response (unless bypassing cache)
     if (!shouldBypass) {
       setCachedResponse(cacheKey, finalResponse);
