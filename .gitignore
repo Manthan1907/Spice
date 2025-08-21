@@ -52,8 +52,6 @@ android/.gradle/
 android/local.properties
 android/captures/
 android/gradle/
-android/gradlew
-android/gradlew.bat
 android/.idea/
 android/app/release/
 android/app/debug/
