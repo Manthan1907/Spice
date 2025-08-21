@@ -45,3 +45,21 @@ Thumbs.db
 # Replit specific
 .replit
 replit.nix
+
+# Android specific
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/.idea/
+android/app/release/
+android/app/debug/
+android/build/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+
+# Capacitor
+.capacitor/

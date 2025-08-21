@@ -40,11 +40,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OCR and analyze image
   app.post("/api/analyze-image", async (req, res) => {
     try {
+      console.log("Image analysis request received");
+      
       const { image } = ocrSchema.parse(req.body);
+      
+      if (!image || image.length < 100) {
+        return res.status(400).json({ 
+          message: "Invalid image data. Please upload a valid image file." 
+        });
+      }
       
       // Remove data URL prefix if present
       const base64Image = image.replace(/^data:image\/[a-z]+;base64,/, '');
       
+      console.log("Starting image analysis...");
       const extractedText = await analyzeImageWithVision(base64Image);
       
       if (!extractedText.trim()) {
@@ -53,14 +62,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log("Image analysis completed successfully");
       res.json({ 
         extractedText: extractedText.trim(),
         message: "Text extracted successfully" 
       });
     } catch (error) {
       console.error("Error analyzing image:", error);
+      
+      // Provide more specific error responses
+      if (error instanceof Error) {
+        if (error.message.includes("Invalid image data")) {
+          return res.status(400).json({ 
+            message: "Invalid image data. Please upload a valid image file.",
+            error: error.message 
+          });
+        } else if (error.message.includes("No readable text")) {
+          return res.status(400).json({ 
+            message: "No readable text found in the image. Please upload a clearer screenshot.",
+            error: error.message 
+          });
+        } else if (error.message.includes("Image quality too low")) {
+          return res.status(400).json({ 
+            message: "Image quality is too low. Please upload a clearer screenshot with readable text.",
+            error: error.message 
+          });
+        } else if (error.message.includes("rate limit")) {
+          return res.status(429).json({ 
+            message: "Service temporarily unavailable. Please try again in a moment.",
+            error: error.message 
+          });
+        }
+      }
+      
       res.status(500).json({ 
-        message: "Failed to analyze image", 
+        message: "Failed to analyze image. Please try again or upload a different image.", 
         error: error instanceof Error ? error.message : "Unknown error" 
       });
     }

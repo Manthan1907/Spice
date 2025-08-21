@@ -1,0 +1,571 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rizz AI - Retro Chat Enhancer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'retro-orange': '#FF8C42',
+                        'retro-orange-light': '#FFB347',
+                        'retro-teal': '#4ECDC4',
+                        'retro-teal-light': '#45B7B8',
+                        'retro-pink': '#FF6B9D',
+                        'retro-cream': '#FFF8E7',
+                        'retro-brown': '#2C1810',
+                        'retro-green': '#7CB342',
+                        'retro-red': '#E74C3C'
+                    },
+                    fontFamily: {
+                        'retro': ['Courier New', 'monospace'],
+                        'retro-display': ['Impact', 'Arial Black', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'retro': '4px 4px 0px 0px rgba(44, 24, 16, 0.3)',
+                        'retro-hover': '6px 6px 0px 0px rgba(44, 24, 16, 0.4)',
+                        'retro-inset': 'inset 2px 2px 4px rgba(0,0,0,0.2)'
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap');
+        
+        .retro-gradient {
+            background: linear-gradient(135deg, #FF8C42 0%, #FFB347 50%, #FF6B9D 100%);
+        }
+        
+        .retro-text-gradient {
+            background: linear-gradient(135deg, #FF8C42, #FF6B9D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .retro-button {
+            background: linear-gradient(145deg, #FF8C42, #FFB347);
+            border: 3px solid #2C1810;
+            transition: all 0.2s ease;
+        }
+        
+        .retro-button:hover {
+            background: linear-gradient(145deg, #FFB347, #FF6B9D);
+            transform: translateY(-2px);
+        }
+        
+        .retro-card {
+            background: #FFF8E7;
+            border: 3px solid #2C1810;
+            box-shadow: 4px 4px 0px 0px rgba(44, 24, 16, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .retro-card:hover {
+            box-shadow: 6px 6px 0px 0px rgba(44, 24, 16, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .retro-input {
+            background: #FFF8E7;
+            border: 3px solid #2C1810;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .retro-input:focus {
+            outline: none;
+            border-color: #FF8C42;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.1), 0 0 0 3px rgba(255, 140, 66, 0.3);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .retro-badge {
+            background: linear-gradient(45deg, #4ECDC4, #45B7B8);
+            border: 2px solid #2C1810;
+            box-shadow: 2px 2px 0px 0px rgba(44, 24, 16, 0.3);
+        }
+        
+        .feedback-success {
+            animation: successPulse 0.6s ease;
+        }
+        
+        .feedback-error {
+            animation: errorShake 0.6s ease;
+        }
+        
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background-color: #7CB342; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-retro-cream min-h-screen font-mono">
+    <!-- @COMPONENT: AppContainer -->
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        
+        <!-- Header Section -->
+        <!-- @COMPONENT: Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-retro-display font-black retro-text-gradient mb-4">
+                RIZZ AI
+            </h1>
+            <p class="text-retro-brown text-lg font-semibold mb-4">
+                🔥 Real-time Chat Enhancer 🔥
+            </p>
+            
+            <!-- Rizz Score Display -->
+            <div class="flex justify-center items-center gap-4 mb-6">
+                <div class="retro-badge px-4 py-2 rounded-lg">
+                    <span class="text-retro-brown font-bold">Rizz Score: </span>
+                    <span class="text-retro-brown font-black text-xl" data-bind="user.rizzScore">850</span>
+                </div>
+                <div class="retro-badge px-4 py-2 rounded-lg">
+                    <span class="text-retro-brown font-bold">Level: </span>
+                    <span class="text-retro-brown font-black" data-bind="user.level">Smooth Operator</span>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Header -->
+
+        <!-- Main Chat Interface -->
+        <!-- @COMPONENT: ChatInterface -->
+        <div class="retro-card rounded-2xl p-6 mb-6">
+            
+            <!-- Tone Selector -->
+            <!-- @COMPONENT: ToneSelector -->
+            <div class="mb-6">
+                <label class="block text-retro-brown font-bold mb-3 text-lg">
+                    🎭 Choose Your Vibe:
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button class="retro-button text-retro-brown font-bold py-3 px-4 rounded-lg text-sm" 
+                            data-tone="flirty" data-event="click:selectTone">
+                        😘 Flirty
+                    </button>
+                    <button class="retro-button text-retro-brown font-bold py-3 px-4 rounded-lg text-sm" 
+                            data-tone="funny" data-event="click:selectTone">
+                        😂 Funny
+                    </button>
+                    <button class="retro-button text-retro-brown font-bold py-3 px-4 rounded-lg text-sm" 
+                            data-tone="respectful" data-event="click:selectTone">
+                        🤝 Respectful
+                    </button>
+                    <button class="retro-button text-retro-brown font-bold py-3 px-4 rounded-lg text-sm" 
+                            data-tone="sarcastic" data-event="click:selectTone">
+                        😏 Sarcastic
+                    </button>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ToneSelector -->
+
+            <!-- Input Section -->
+            <!-- @COMPONENT: MessageInput -->
+            <div class="mb-6">
+                <label class="block text-retro-brown font-bold mb-3 text-lg">
+                    💬 What did they say?
+                </label>
+                <textarea 
+                    class="retro-input w-full p-4 rounded-lg text-retro-brown font-medium resize-none"
+                    rows="4"
+                    placeholder="Paste their message here..."
+                    data-bind="inputMessage"
+                    data-event="input:handleInput"
+                    data-mock="true">Hey! How's your day going?</textarea>
+                
+                <button class="retro-button w-full mt-4 py-4 rounded-lg text-retro-brown font-bold text-lg" 
+                        data-event="click:generateReplies"
+                        data-implementation="Should call POST /generate API">
+                    ✨ Generate Rizz Replies ✨
+                </button>
+            </div>
+            <!-- @END_COMPONENT: MessageInput -->
+
+            <!-- AI Generated Replies -->
+            <!-- @COMPONENT: ReplyCards -->
+            <div class="space-y-4" id="reply-container">
+                <h3 class="text-retro-brown font-bold text-lg mb-4">🤖 AI Suggestions:</h3>
+                
+                <!-- @MAP: replies.map(reply => ( -->
+                <!-- Reply Card 1 -->
+                <div class="retro-card p-4 rounded-xl">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <p class="text-retro-brown font-medium leading-relaxed" data-bind="reply.text" data-mock="true">
+                                "My day just got 100% better now that I'm talking to you! ✨ How about yours?"
+                            </p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="retro-badge px-2 py-1 rounded text-xs font-bold text-retro-brown" data-bind="reply.tone">
+                                    😘 Flirty
+                                </span>
+                                <span class="text-retro-brown text-sm opacity-75" data-bind="reply.confidence">
+                                    Confidence: 95%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button class="retro-button px-4 py-2 rounded-lg text-retro-brown font-bold text-sm"
+                                    data-event="click:copyToClipboard"
+                                    data-implementation="Copy reply text to clipboard">
+                                📋 Copy
+                            </button>
+                            <div class="flex gap-1">
+                                <button class="w-8 h-8 rounded-full bg-retro-green border-2 border-retro-brown text-white flex items-center justify-center"
+                                        data-event="click:likeReply"
+                                        data-implementation="POST /feedback with positive rating">
+                                    👍
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-retro-red border-2 border-retro-brown text-white flex items-center justify-center"
+                                        data-event="click:dislikeReply"
+                                        data-implementation="POST /feedback with negative rating">
+                                    👎
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reply Card 2 -->
+                <div class="retro-card p-4 rounded-xl">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <p class="text-retro-brown font-medium leading-relaxed" data-bind="reply.text" data-mock="true">
+                                "Pretty good! Though I have to say, it's getting even better now that we're chatting 😊"
+                            </p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="retro-badge px-2 py-1 rounded text-xs font-bold text-retro-brown" data-bind="reply.tone">
+                                    🤝 Respectful
+                                </span>
+                                <span class="text-retro-brown text-sm opacity-75" data-bind="reply.confidence">
+                                    Confidence: 88%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button class="retro-button px-4 py-2 rounded-lg text-retro-brown font-bold text-sm"
+                                    data-event="click:copyToClipboard"
+                                    data-implementation="Copy reply text to clipboard">
+                                📋 Copy
+                            </button>
+                            <div class="flex gap-1">
+                                <button class="w-8 h-8 rounded-full bg-retro-green border-2 border-retro-brown text-white flex items-center justify-center"
+                                        data-event="click:likeReply">
+                                    👍
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-retro-red border-2 border-retro-brown text-white flex items-center justify-center"
+                                        data-event="click:dislikeReply">
+                                    👎
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reply Card 3 -->
+                <div class="retro-card p-4 rounded-xl">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <p class="text-retro-brown font-medium leading-relaxed" data-bind="reply.text" data-mock="true">
+                                "Oh you know, the usual - conquering the world, solving mysteries, the typical Tuesday stuff 😂"
+                            </p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="retro-badge px-2 py-1 rounded text-xs font-bold text-retro-brown" data-bind="reply.tone">
+                                    😂 Funny
+                                </span>
+                                <span class="text-retro-brown text-sm opacity-75" data-bind="reply.confidence">
+                                    Confidence: 92%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button class="retro-button px-4 py-2 rounded-lg text-retro-brown font-bold text-sm"
+                                    data-event="click:copyToClipboard"
+                                    data-implementation="Copy reply text to clipboard">
+                                📋 Copy
+                            </button>
+                            <div class="flex gap-1">
+                                <button class="w-8 h-8 rounded-full bg-retro-green border-2 border-retro-brown text-white flex items-center justify-center"
+                                        data-event="click:likeReply">
+                                    👍
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-retro-red border-2 border-retro-brown text-white flex items-center justify-center"
+                                        data-event="click:dislikeReply">
+                                    👎
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+            <!-- @END_COMPONENT: ReplyCards -->
+        </div>
+        <!-- @END_COMPONENT: ChatInterface -->
+
+        <!-- Stats and Features Section -->
+        <!-- @COMPONENT: StatsSection -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <!-- Quick Stats -->
+            <div class="retro-card p-6 rounded-2xl">
+                <h3 class="text-retro-brown font-bold text-xl mb-4">📊 Your Stats</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-retro-brown font-medium">Replies Generated:</span>
+                        <span class="retro-badge px-3 py-1 rounded font-bold" data-bind="stats.repliesGenerated">127</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-retro-brown font-medium">Success Rate:</span>
+                        <span class="retro-badge px-3 py-1 rounded font-bold" data-bind="stats.successRate">89%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-retro-brown font-medium">Favorite Tone:</span>
+                        <span class="retro-badge px-3 py-1 rounded font-bold" data-bind="stats.favoriteTone">😂 Funny</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="retro-card p-6 rounded-2xl">
+                <h3 class="text-retro-brown font-bold text-xl mb-4">⚡ Features</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-retro-green rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs">✓</span>
+                        </div>
+                        <span class="text-retro-brown font-medium">Privacy-First (No Storage)</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-retro-green rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs">✓</span>
+                        </div>
+                        <span class="text-retro-brown font-medium">Real-time Generation (&lt;2s)</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-retro-green rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs">✓</span>
+                        </div>
+                        <span class="text-retro-brown font-medium">Multiple Personality Tones</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-retro-green rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs">✓</span>
+                        </div>
+                        <span class="text-retro-brown font-medium">One-Click Copy & Paste</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: StatsSection -->
+
+        <!-- Personality Packs Section -->
+        <!-- @COMPONENT: PersonalityPacks -->
+        <div class="retro-card p-6 rounded-2xl mb-6">
+            <h3 class="text-retro-brown font-bold text-xl mb-4">🎭 Unlock Personality Packs</h3>
+            <div class="grid md:grid-cols-3 gap-4">
+                <!-- Pack 1 -->
+                <div class="border-2 border-retro-brown rounded-lg p-4 bg-gradient-to-br from-retro-orange-light to-retro-pink">
+                    <h4 class="font-bold text-retro-brown mb-2">🎬 Bollywood Pack</h4>
+                    <p class="text-retro-brown text-sm mb-3">Dramatic, romantic, and over-the-top responses</p>
+                    <button class="retro-button w-full py-2 rounded font-bold text-sm"
+                            data-event="click:unlockPack"
+                            data-pack="bollywood"
+                            data-implementation="POST /packs/unlock">
+                        Unlock - $2.99
+                    </button>
+                </div>
+
+                <!-- Pack 2 -->
+                <div class="border-2 border-retro-brown rounded-lg p-4 bg-gradient-to-br from-retro-teal to-retro-teal-light">
+                    <h4 class="font-bold text-retro-brown mb-2">💼 CEO Pack</h4>
+                    <p class="text-retro-brown text-sm mb-3">Confident, ambitious, and leadership-focused</p>
+                    <button class="retro-button w-full py-2 rounded font-bold text-sm"
+                            data-event="click:unlockPack"
+                            data-pack="ceo"
+                            data-implementation="POST /packs/unlock">
+                        Unlock - $2.99
+                    </button>
+                </div>
+
+                <!-- Pack 3 -->
+                <div class="border-2 border-retro-brown rounded-lg p-4 bg-gradient-to-br from-retro-pink to-retro-orange">
+                    <h4 class="font-bold text-retro-brown mb-2">🎮 Gamer Pack</h4>
+                    <p class="text-retro-brown text-sm mb-3">Gaming references, memes, and competitive spirit</p>
+                    <button class="retro-button w-full py-2 rounded font-bold text-sm"
+                            data-event="click:unlockPack"
+                            data-pack="gamer"
+                            data-implementation="POST /packs/unlock">
+                        Unlock - $2.99
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: PersonalityPacks -->
+
+        <!-- Footer -->
+        <!-- @COMPONENT: Footer -->
+        <div class="text-center">
+            <p class="text-retro-brown font-medium mb-4">
+                Made with ❤️ for smooth operators worldwide
+            </p>
+            <div class="flex justify-center gap-4">
+                <button class="retro-button px-6 py-2 rounded-lg font-bold text-sm" 
+                        data-event="click:openFeedback">
+                    💬 Feedback
+                </button>
+                <button class="retro-button px-6 py-2 rounded-lg font-bold text-sm" 
+                        data-event="click:openSettings">
+                    ⚙️ Settings
+                </button>
+                <button class="retro-button px-6 py-2 rounded-lg font-bold text-sm" 
+                        data-event="click:openSupport">
+                    🆘 Support
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Footer -->
+    </div>
+    <!-- @END_COMPONENT: AppContainer -->
+
+    <!-- Loading State Modal -->
+    <!-- @COMPONENT: LoadingModal -->
+    <div id="loading-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="retro-card p-8 rounded-2xl text-center">
+            <div class="pulse-animation text-6xl mb-4">🤖</div>
+            <h3 class="text-retro-brown font-bold text-xl mb-2">Generating Rizz...</h3>
+            <p class="text-retro-brown">Our AI is crafting the perfect replies for you!</p>
+            <div class="mt-4 w-full bg-retro-brown rounded-full h-3">
+                <div class="bg-retro-orange h-3 rounded-full animate-pulse" style="width: 60%"></div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: LoadingModal -->
+
+    <!-- Success Feedback Modal -->
+    <!-- @COMPONENT: SuccessModal -->
+    <div id="success-modal" class="fixed top-4 right-4 retro-card p-4 rounded-xl hidden z-50 max-w-sm">
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">✅</div>
+            <div>
+                <h4 class="font-bold text-retro-brown">Copied!</h4>
+                <p class="text-retro-brown text-sm">Reply copied to clipboard</p>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: SuccessModal -->
+
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, and state management
+            
+            // Mock data for demonstration
+            let currentTone = 'flirty';
+            let rizzScore = 850;
+            
+            // Tone selection functionality
+            document.querySelectorAll('[data-tone]').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active state from all buttons
+                    document.querySelectorAll('[data-tone]').forEach(btn => {
+                        btn.classList.remove('bg-retro-pink');
+                    });
+                    
+                    // Add active state to clicked button
+                    this.classList.add('bg-retro-pink');
+                    currentTone = this.dataset.tone;
+                    
+                    console.log('Selected tone:', currentTone);
+                    // TODO: Call PATCH /tone API
+                });
+            });
+            
+            // Copy to clipboard functionality
+            document.querySelectorAll('[data-event*="copyToClipboard"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const replyText = this.closest('.retro-card').querySelector('[data-bind="reply.text"]').textContent;
+                    
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(replyText.replace(/"/g, '')).then(() => {
+                        // Show success modal
+                        const successModal = document.getElementById('success-modal');
+                        successModal.classList.remove('hidden');
+                        
+                        // Hide after 3 seconds
+                        setTimeout(() => {
+                            successModal.classList.add('hidden');
+                        }, 3000);
+                    });
+                });
+            });
+            
+            // Generate replies functionality
+            document.querySelector('[data-event*="generateReplies"]').addEventListener('click', function() {
+                const loadingModal = document.getElementById('loading-modal');
+                loadingModal.classList.remove('hidden');
+                
+                // Simulate API call delay
+                setTimeout(() => {
+                    loadingModal.classList.add('hidden');
+                    // TODO: Update replies with actual API response
+                    console.log('Generating replies for tone:', currentTone);
+                }, 2000);
+            });
+            
+            // Feedback functionality
+            document.querySelectorAll('[data-event*="likeReply"], [data-event*="dislikeReply"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const isLike = this.dataset.event.includes('like');
+                    
+                    if (isLike) {
+                        this.classList.add('feedback-success');
+                        rizzScore += 10;
+                    } else {
+                        this.classList.add('feedback-error');
+                        rizzScore -= 5;
+                    }
+                    
+                    // Update score display
+                    document.querySelector('[data-bind="user.rizzScore"]').textContent = rizzScore;
+                    
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        this.classList.remove('feedback-success', 'feedback-error');
+                    }, 600);
+                    
+                    console.log('Feedback submitted:', isLike ? 'like' : 'dislike');
+                    // TODO: Call POST /feedback API
+                });
+            });
+            
+            // Pack unlock functionality
+            document.querySelectorAll('[data-event*="unlockPack"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const packName = this.dataset.pack;
+                    console.log('Unlocking pack:', packName);
+                    // TODO: Implement payment flow and POST /packs/unlock API
+                });
+            });
+            
+            // Set default active tone
+            document.querySelector('[data-tone="flirty"]').classList.add('bg-retro-pink');
+        })();
+    </script>
+</body>
+</html>

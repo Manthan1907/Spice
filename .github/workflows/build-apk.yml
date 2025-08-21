@@ -1,0 +1,84 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build web assets
+      run: npm run build
+      
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Add Android platform
+      run: npx cap add android
+      
+    - name: Copy web assets to Android
+      run: npx cap copy android
+      
+    - name: Sync Android project
+      run: npx cap sync android
+      
+    - name: Build APK
+      run: |
+        cd android
+        ./gradlew assembleDebug
+      
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rizzretro-app-debug
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        
+    - name: Create Release
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: android/app/build/outputs/apk/debug/app-debug.apk
+        tag_name: v${{ github.run_number }}
+        name: RizzRetro APK v${{ github.run_number }}
+        body: |
+          🚀 Automated APK build for RizzRetro AI
+          
+          **Build Info:**
+          - Commit: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Build Number: ${{ github.run_number }}
+          
+          **Installation:**
+          1. Download the APK file
+          2. Enable "Install from Unknown Sources" on your Android device
+          3. Install the APK
+          
+          **Features:**
+          - AI-powered flirty replies
+          - Image analysis
+          - Pickup line generator
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

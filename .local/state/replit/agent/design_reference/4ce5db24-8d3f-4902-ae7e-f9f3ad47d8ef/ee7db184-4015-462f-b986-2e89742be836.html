@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetroRizz AI - Chat Enhancer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        retro: {
+                            cream: '#FFF8E7',
+                            orange: '#FF6B35',
+                            sage: '#9CAF88',
+                            purple: '#6B5B95',
+                            charcoal: '#2D3748',
+                            pink: '#FFB3D9',
+                            yellow: '#FFD23F'
+                        }
+                    },
+                    fontFamily: {
+                        'retro': ['Courier New', 'monospace'],
+                        'retro-sans': ['Helvetica', 'Arial', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'retro': '4px 4px 0px rgba(45, 55, 72, 0.3)',
+                        'retro-lg': '6px 6px 0px rgba(45, 55, 72, 0.3)',
+                        'retro-inset': 'inset 2px 2px 4px rgba(0,0,0,0.1)'
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Quicksand:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #FFF8E7 0%, #FFD23F 100%);
+        }
+        
+        .retro-button {
+            transition: all 0.2s ease;
+            border: 3px solid #2D3748;
+        }
+        
+        .retro-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(45, 55, 72, 0.3);
+        }
+        
+        .retro-button:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px rgba(45, 55, 72, 0.3);
+        }
+        
+        .retro-card {
+            border: 3px solid #2D3748;
+            background: #FFF8E7;
+        }
+        
+        .pulse-retro {
+            animation: pulse-retro 2s infinite;
+        }
+        
+        @keyframes pulse-retro {
+            0%, 100% { background-color: #FF6B35; }
+            50% { background-color: #FFD23F; }
+        }
+        
+        .tone-selector {
+            background: linear-gradient(45deg, #6B5B95, #9CAF88);
+        }
+        
+        .upload-zone {
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(107, 91, 149, 0.1) 10px,
+                    rgba(107, 91, 149, 0.1) 20px
+                );
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- @COMPONENT: AppContainer -->
+    <div class="max-w-sm mx-auto min-h-screen bg-retro-cream relative overflow-hidden">
+        
+        <!-- Retro Background Pattern -->
+        <div class="absolute inset-0 opacity-5 pointer-events-none">
+            <div class="w-full h-full" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(45,55,72,0.1) 20px, rgba(45,55,72,0.1) 40px);"></div>
+        </div>
+        
+        <!-- Header -->
+        <!-- @COMPONENT: RetroHeader -->
+        <header class="relative z-10 p-4 text-center">
+            <div class="retro-card rounded-2xl p-4 shadow-retro-lg mb-6">
+                <h1 class="text-3xl font-bold text-retro-charcoal mb-2" style="font-family: 'Space Mono', monospace;">
+                    <i class="fas fa-robot mr-2"></i>RetroRizz AI
+                </h1>
+                <p class="text-retro-purple text-sm font-medium">Chat Enhancer • Privacy First</p>
+            </div>
+        </header>
+        <!-- @END_COMPONENT: RetroHeader -->
+
+        <!-- Main Content -->
+        <main class="px-4 pb-6 space-y-6">
+            
+            <!-- Upload Section -->
+            <!-- @COMPONENT: UploadSection -->
+            <section class="retro-card rounded-3xl p-6 shadow-retro-lg upload-zone">
+                <div class="text-center">
+                    <!-- A vintage camera on a wooden desk with soft lighting -->
+                    <div class="w-20 h-20 mx-auto mb-4 retro-card rounded-full flex items-center justify-center bg-retro-orange shadow-retro">
+                        <i class="fas fa-camera text-2xl text-retro-cream"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-retro-charcoal mb-3" style="font-family: 'Space Mono', monospace;">
+                        Upload Chat Screenshot
+                    </h2>
+                    <p class="text-retro-purple text-sm mb-6 leading-relaxed">
+                        Snap or upload a chat screenshot and let our AI generate the perfect replies!
+                    </p>
+                    
+                    <button class="retro-button bg-retro-orange text-retro-cream font-bold py-4 px-6 rounded-2xl shadow-retro w-full mb-4 text-lg" data-event="click:handleImageUpload" data-implementation="Should trigger camera/gallery picker">
+                        <i class="fas fa-upload mr-2"></i>Upload Screenshot
+                    </button>
+                    
+                    <div class="flex gap-3">
+                        <button class="retro-button bg-retro-sage text-retro-charcoal font-semibold py-2 px-4 rounded-xl shadow-retro flex-1 text-sm" data-event="click:openCamera">
+                            <i class="fas fa-camera mr-1"></i>Camera
+                        </button>
+                        <button class="retro-button bg-retro-purple text-retro-cream font-semibold py-2 px-4 rounded-xl shadow-retro flex-1 text-sm" data-event="click:openGallery">
+                            <i class="fas fa-images mr-1"></i>Gallery
+                        </button>
+                    </div>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: UploadSection -->
+
+            <!-- Alternative Options -->
+            <!-- @COMPONENT: AlternativeOptions -->
+            <section class="space-y-3">
+                <div class="text-center">
+                    <span class="text-retro-purple font-medium text-sm bg-retro-cream px-4 py-2 rounded-full border-2 border-retro-purple">
+                        OR
+                    </span>
+                </div>
+                
+                <button class="retro-button bg-retro-yellow text-retro-charcoal font-bold py-4 px-6 rounded-2xl shadow-retro w-full" data-event="click:openManualEntry">
+                    <i class="fas fa-keyboard mr-2"></i>Enter Text Manually
+                </button>
+                
+                <button class="retro-button bg-retro-pink text-retro-charcoal font-bold py-4 px-6 rounded-2xl shadow-retro w-full" data-event="click:generatePickupLines">
+                    <i class="fas fa-heart mr-2"></i>Get Pickup Lines
+                </button>
+            </section>
+            <!-- @END_COMPONENT: AlternativeOptions -->
+
+            <!-- Tone Selector -->
+            <!-- @COMPONENT: ToneSelector -->
+            <section class="retro-card rounded-3xl p-6 shadow-retro-lg tone-selector">
+                <h3 class="text-lg font-bold text-retro-cream mb-4 text-center" style="font-family: 'Space Mono', monospace;">
+                    <i class="fas fa-palette mr-2"></i>Choose Your Vibe
+                </h3>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- @STATE: selectedTone:string = 'flirty' -->
+                    <button class="retro-button bg-retro-cream text-retro-charcoal font-semibold py-3 px-4 rounded-xl shadow-retro text-sm transition-all" data-tone="flirty" data-event="click:selectTone">
+                        <i class="fas fa-wink mr-1"></i>Flirty
+                    </button>
+                    <button class="retro-button bg-retro-orange text-retro-cream font-semibold py-3 px-4 rounded-xl shadow-retro text-sm" data-tone="funny" data-event="click:selectTone">
+                        <i class="fas fa-laugh mr-1"></i>Funny
+                    </button>
+                    <button class="retro-button bg-retro-sage text-retro-charcoal font-semibold py-3 px-4 rounded-xl shadow-retro text-sm" data-tone="respectful" data-event="click:selectTone">
+                        <i class="fas fa-handshake mr-1"></i>Respectful
+                    </button>
+                    <button class="retro-button bg-retro-purple text-retro-cream font-semibold py-3 px-4 rounded-xl shadow-retro text-sm" data-tone="sarcastic" data-event="click:selectTone">
+                        <i class="fas fa-smirk mr-1"></i>Sarcastic
+                    </button>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: ToneSelector -->
+
+            <!-- Generated Replies Section (Initially Hidden) -->
+            <!-- @COMPONENT: RepliesSection -->
+            <section class="retro-card rounded-3xl p-6 shadow-retro-lg hidden" id="repliesSection" data-mock="true">
+                <h3 class="text-lg font-bold text-retro-charcoal mb-4 text-center" style="font-family: 'Space Mono', monospace;">
+                    <i class="fas fa-magic mr-2"></i>AI Generated Replies
+                </h3>
+                
+                <!-- @MAP: replies.map(reply => ( -->
+                <div class="space-y-3">
+                    <div class="retro-card rounded-2xl p-4 shadow-retro bg-gradient-to-r from-retro-orange to-retro-yellow">
+                        <p class="text-retro-charcoal font-medium mb-3" data-bind="reply.text" data-mock="true">
+                            "That's actually hilarious! 😂 Want to grab coffee and tell me more funny stories?"
+                        </p>
+                        <button class="retro-button bg-retro-cream text-retro-charcoal font-semibold py-2 px-4 rounded-xl shadow-retro text-sm w-full" data-event="click:copyToClipboard">
+                            <i class="fas fa-copy mr-1"></i>Copy Reply
+                        </button>
+                    </div>
+                    
+                    <div class="retro-card rounded-2xl p-4 shadow-retro bg-gradient-to-r from-retro-sage to-retro-purple">
+                        <p class="text-retro-cream font-medium mb-3" data-bind="reply.text" data-mock="true">
+                            "I'm totally here for this energy! What other adventures have you been on lately?"
+                        </p>
+                        <button class="retro-button bg-retro-cream text-retro-charcoal font-semibold py-2 px-4 rounded-xl shadow-retro text-sm w-full" data-event="click:copyToClipboard">
+                            <i class="fas fa-copy mr-1"></i>Copy Reply
+                        </button>
+                    </div>
+                    
+                    <div class="retro-card rounded-2xl p-4 shadow-retro bg-gradient-to-r from-retro-pink to-retro-orange">
+                        <p class="text-retro-charcoal font-medium mb-3" data-bind="reply.text" data-mock="true">
+                            "Okay, you officially win the internet today! 🏆 I'm impressed and slightly intimidated."
+                        </p>
+                        <button class="retro-button bg-retro-cream text-retro-charcoal font-semibold py-2 px-4 rounded-xl shadow-retro text-sm w-full" data-event="click:copyToClipboard">
+                            <i class="fas fa-copy mr-1"></i>Copy Reply
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+                
+                <div class="text-center mt-4">
+                    <button class="retro-button bg-retro-charcoal text-retro-cream font-semibold py-2 px-6 rounded-xl shadow-retro text-sm" data-event="click:generateMore">
+                        <i class="fas fa-refresh mr-1"></i>Generate More
+                    </button>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: RepliesSection -->
+
+            <!-- Manual Text Input (Initially Hidden) -->
+            <!-- @COMPONENT: ManualInput -->
+            <section class="retro-card rounded-3xl p-6 shadow-retro-lg hidden" id="manualInputSection">
+                <h3 class="text-lg font-bold text-retro-charcoal mb-4 text-center" style="font-family: 'Space Mono', monospace;">
+                    <i class="fas fa-edit mr-2"></i>Enter Chat Context
+                </h3>
+                
+                <textarea 
+                    class="w-full h-32 p-4 border-3 border-retro-charcoal rounded-2xl bg-retro-cream text-retro-charcoal font-medium shadow-retro-inset resize-none focus:outline-none focus:shadow-retro-lg transition-all"
+                    placeholder="Paste your chat message here..."
+                    data-event="input:handleTextInput"
+                    data-implementation="Should validate input and prepare for AI processing"
+                ></textarea>
+                
+                <button class="retro-button bg-retro-orange text-retro-cream font-bold py-3 px-6 rounded-2xl shadow-retro w-full mt-4" data-event="click:processText">
+                    <i class="fas fa-paper-plane mr-2"></i>Generate Replies
+                </button>
+            </section>
+            <!-- @END_COMPONENT: ManualInput -->
+
+            <!-- Loading State -->
+            <!-- @COMPONENT: LoadingState -->
+            <section class="retro-card rounded-3xl p-8 shadow-retro-lg text-center hidden" id="loadingSection">
+                <div class="pulse-retro w-16 h-16 mx-auto rounded-full mb-4 flex items-center justify-center">
+                    <i class="fas fa-cog fa-spin text-2xl text-retro-cream"></i>
+                </div>
+                <h3 class="text-lg font-bold text-retro-charcoal mb-2" style="font-family: 'Space Mono', monospace;">
+                    AI is Working...
+                </h3>
+                <p class="text-retro-purple text-sm">Analyzing chat and generating perfect replies</p>
+            </section>
+            <!-- @END_COMPONENT: LoadingState -->
+
+            <!-- Privacy Notice -->
+            <!-- @COMPONENT: PrivacyNotice -->
+            <div class="retro-card rounded-2xl p-4 shadow-retro bg-retro-sage text-center">
+                <p class="text-retro-charcoal text-xs font-medium">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Privacy First: Your chats are never stored or saved
+                </p>
+            </div>
+            <!-- @END_COMPONENT: PrivacyNotice -->
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <!-- @COMPONENT: BottomNav -->
+        <nav class="absolute bottom-4 left-4 right-4">
+            <div class="retro-card rounded-2xl p-3 shadow-retro-lg flex justify-center space-x-4">
+                <button class="retro-button bg-retro-orange text-retro-cream font-semibold py-2 px-4 rounded-xl shadow-retro text-sm" data-event="click:showHome">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="retro-button bg-retro-purple text-retro-cream font-semibold py-2 px-4 rounded-xl shadow-retro text-sm" data-event="click:showSettings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="retro-button bg-retro-sage text-retro-charcoal font-semibold py-2 px-4 rounded-xl shadow-retro text-sm" data-event="click:showHistory">
+                    <i class="fas fa-history"></i>
+                </button>
+            </div>
+        </nav>
+        <!-- @END_COMPONENT: BottomNav -->
+
+    </div>
+    <!-- @END_COMPONENT: AppContainer -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Tone selection functionality
+            const toneButtons = document.querySelectorAll('[data-tone]');
+            let selectedTone = 'flirty';
+            
+            toneButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove selection from all buttons
+                    toneButtons.forEach(btn => {
+                        btn.classList.remove('ring-4', 'ring-retro-charcoal');
+                    });
+                    
+                    // Add selection to clicked button
+                    this.classList.add('ring-4', 'ring-retro-charcoal');
+                    selectedTone = this.dataset.tone;
+                    
+                    console.log('Selected tone:', selectedTone);
+                    // TODO: Send PATCH request to /tone endpoint
+                });
+            });
+            
+            // Set initial selection
+            toneButtons[0].classList.add('ring-4', 'ring-retro-charcoal');
+            
+            // Copy to clipboard functionality
+            const copyButtons = document.querySelectorAll('[data-event*="copyToClipboard"]');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const replyText = this.parentElement.querySelector('p').textContent;
+                    
+                    // Simulate clipboard copy
+                    navigator.clipboard.writeText(replyText).then(() => {
+                        // Visual feedback
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+                        this.classList.add('bg-retro-sage');
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.classList.remove('bg-retro-sage');
+                        }, 1500);
+                    });
+                });
+            });
+            
+            // Upload functionality
+            const uploadButton = document.querySelector('[data-event*="handleImageUpload"]');
+            const manualButton = document.querySelector('[data-event*="openManualEntry"]');
+            const pickupLinesButton = document.querySelector('[data-event*="generatePickupLines"]');
+            
+            uploadButton?.addEventListener('click', function() {
+                showLoading();
+                // TODO: Implement file upload with OCR processing
+                setTimeout(() => {
+                    hideLoading();
+                    showReplies();
+                }, 2000);
+            });
+            
+            manualButton?.addEventListener('click', function() {
+                showManualInput();
+            });
+            
+            pickupLinesButton?.addEventListener('click', function() {
+                showLoading();
+                // TODO: Generate pickup lines
+                setTimeout(() => {
+                    hideLoading();
+                    showReplies();
+                }, 1500);
+            });
+            
+            // Section visibility functions
+            function showLoading() {
+                document.getElementById('loadingSection').classList.remove('hidden');
+                document.getElementById('repliesSection').classList.add('hidden');
+                document.getElementById('manualInputSection').classList.add('hidden');
+            }
+            
+            function hideLoading() {
+                document.getElementById('loadingSection').classList.add('hidden');
+            }
+            
+            function showReplies() {
+                document.getElementById('repliesSection').classList.remove('hidden');
+                document.getElementById('manualInputSection').classList.add('hidden');
+            }
+            
+            function showManualInput() {
+                document.getElementById('manualInputSection').classList.remove('hidden');
+                document.getElementById('repliesSection').classList.add('hidden');
+            }
+            
+            // Process manual text input
+            const processTextButton = document.querySelector('[data-event*="processText"]');
+            processTextButton?.addEventListener('click', function() {
+                const textInput = document.querySelector('textarea');
+                if (textInput.value.trim()) {
+                    showLoading();
+                    // TODO: Process text with AI API
+                    setTimeout(() => {
+                        hideLoading();
+                        showReplies();
+                    }, 2000);
+                }
+            });
+            
+        })();
+    </script>
+</body>
+</html>

@@ -307,10 +307,6 @@ export default function Home() {
               onSubmit={handleManualSubmit}
               isLoading={isLoading}
             />
-            <ToneSelector 
-              selectedTone={selectedTone}
-              onToneSelect={setSelectedTone}
-            />
           </>
         )}
 
