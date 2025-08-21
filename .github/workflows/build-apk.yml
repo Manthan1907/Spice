@@ -36,9 +36,6 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
       
-    - name: Add Android platform
-      run: npx cap add android
-      
     - name: Copy web assets to Android
       run: npx cap copy android
       
