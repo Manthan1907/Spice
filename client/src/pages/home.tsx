@@ -9,8 +9,7 @@ import { LoadingState } from '@/components/loading-state';
 import { RetroButton } from '@/components/retro-button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { apiRequest } from '@/lib/queryClient';
-import { AuthService } from '@/lib/auth';
+import { callSupabaseFunction, API_ENDPOINTS } from '@/lib/supabase-client';
 import { Button } from '@/components/ui/button';
 import { User, LogOut } from 'lucide-react';
 
@@ -42,10 +41,9 @@ export default function Home() {
 
   const analyzeImageMutation = useMutation({
     mutationFn: async (base64Image: string) => {
-      const response = await apiRequest('POST', '/api/analyze-image', {
+      return await callSupabaseFunction(API_ENDPOINTS.analyzeImage, {
         image: base64Image
       });
-      return await response.json();
     },
     onSuccess: (data) => {
       setCurrentText(data.extractedText);
@@ -65,22 +63,10 @@ export default function Home() {
 
   const generateRepliesMutation = useMutation({
     mutationFn: async ({ text, tone }: { text: string; tone: string }) => {
-      const headers = isAuthenticated ? AuthService.getAuthHeader() : {};
-      const response = await fetch('/api/generate-replies', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-        body: JSON.stringify({ text, tone }),
+      return await callSupabaseFunction(API_ENDPOINTS.generateReplies, {
+        text,
+        tone
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to generate replies');
-      }
-
-      return await response.json();
     },
     onSuccess: (data) => {
       const newReplies = data.replies.map((text: string, index: number) => ({
