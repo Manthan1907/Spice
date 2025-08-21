@@ -1,0 +1,2 @@
+[functions.generate-replies]
+verify_jwt = false

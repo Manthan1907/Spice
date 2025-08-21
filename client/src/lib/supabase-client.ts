@@ -19,6 +19,7 @@ export async function callSupabaseFunction(
 ) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'apikey': supabaseAnonKey,
   }
 
   if (token) {
