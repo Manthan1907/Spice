@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,26 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
-
-    // Get the user from the JWT token
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
     // Parse request body
     const { text, tone } = await req.json()
 
@@ -43,7 +22,7 @@ serve(async (req) => {
       )
     }
 
-    // Generate replies using OpenAI (you'll need to add your OpenAI API key to Supabase secrets)
+    // Generate replies using OpenAI
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
       return new Response(
@@ -53,15 +32,15 @@ serve(async (req) => {
     }
 
     const tonePrompts = {
-      flirty: "Generate 3 flirty, charming, and playful responses",
-      romantic: "Generate 3 romantic, sweet, and heartfelt responses",
-      funny: "Generate 3 witty, humorous, and entertaining responses",
-      casual: "Generate 3 casual, friendly, and laid-back responses"
+      flirty: "Generate 3 flirty, charming, and playful pickup lines",
+      romantic: "Generate 3 romantic, sweet, and heartfelt pickup lines",
+      funny: "Generate 3 witty, humorous, and entertaining pickup lines",
+      casual: "Generate 3 casual, friendly, and laid-back pickup lines"
     }
 
-    const prompt = `${tonePrompts[tone as keyof typeof tonePrompts] || tonePrompts.casual} to this message: "${text}"
+    const prompt = `${tonePrompts[tone as keyof typeof tonePrompts] || tonePrompts.casual}
 
-Make the responses natural, engaging, and appropriate for the given tone. Keep each response under 100 characters.`
+Make the pickup lines natural, engaging, and appropriate for the given tone. Keep each line under 100 characters. Return only the pickup lines, one per line, without numbers.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -74,7 +53,7 @@ Make the responses natural, engaging, and appropriate for the given tone. Keep e
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that generates engaging responses for text messages.'
+            content: 'You are a helpful assistant that generates engaging pickup lines.'
           },
           {
             role: 'user',
@@ -87,6 +66,8 @@ Make the responses natural, engaging, and appropriate for the given tone. Keep e
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error('OpenAI API error:', response.status, errorText)
       throw new Error(`OpenAI API error: ${response.statusText}`)
     }
 
@@ -96,20 +77,13 @@ Make the responses natural, engaging, and appropriate for the given tone. Keep e
     // Split the response into individual replies
     const replies = generatedText
       .split('\n')
-      .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(line => line.length > 0)
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.match(/^\d+\./))
       .slice(0, 3)
 
-    // Store the first reply in the database
-    if (replies.length > 0) {
-      await supabaseClient
-        .from('replies')
-        .insert({
-          user_id: user.id,
-          original_text: text,
-          generated_reply: replies[0],
-          tone: tone
-        })
+    // If we don't have enough replies, generate some fallback ones
+    while (replies.length < 3) {
+      replies.push(`Hey there! ${tone === 'flirty' ? 'You caught my eye 😉' : 'Nice to meet you!'}`)
     }
 
     return new Response(
@@ -120,7 +94,10 @@ Make the responses natural, engaging, and appropriate for the given tone. Keep e
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

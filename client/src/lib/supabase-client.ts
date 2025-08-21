@@ -32,8 +32,14 @@ export async function callSupabaseFunction(
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Function call failed')
+    let errorMessage = 'Function call failed'
+    try {
+      const error = await response.json()
+      errorMessage = error.error || error.details || errorMessage
+    } catch (e) {
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`
+    }
+    throw new Error(errorMessage)
   }
 
   return await response.json()
